@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Swap Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    --navy:#12172b; --navy2:#181e38; --navy3:#232a4d;
+    --bg:#eef1f7; --card:#ffffff; --line:#e5e8f0;
+    --text:#1c2233; --muted:#6b7280; --muted2:#98a0b3;
+    --blue:#2f6fed; --blue-d:#1f56c9;
+    --green:#0ea15a; --green-bg:#e7f8ee;
+    --yellow:#c07a06; --yellow-bg:#fdf3de;
+    --red:#d33636; --red-bg:#fdeaea;
+    --teal:#0f9488;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  ::selection{background:#cfe0ff;}
+  input,select,textarea,button{font-family:inherit;}
+  a{color:var(--blue);}
+
+  #app{display:flex;min-height:100vh;}
+  #sidebar{width:300px;flex:none;background:var(--navy);color:#dfe3f0;padding:18px 16px 40px;}
+  #main-col{flex:1;min-width:0;display:flex;flex-direction:column;}
+
+  #topbar{background:#fff;border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
+  #topbar .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;}
+  #topbar .brand .ico{font-size:20px;}
+  #topbar .brand .sub{font-size:11.5px;color:var(--muted);font-weight:400;margin-left:6px;}
+  #topbar .today{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;text-align:right;}
+  #topbar .today b{display:block;font-size:16px;color:var(--text);text-transform:none;letter-spacing:0;}
+
+  .sb-block{margin-bottom:14px;}
+  .sb-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9aa3c4;margin-bottom:8px;}
+  .sb-divider{height:1px;background:#2a3157;margin:16px 0;}
+  .sb-input{width:100%;background:var(--navy3);border:1px solid #323a63;color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;}
+  .sb-input::placeholder{color:#7d84a8;}
+  .sb-input:focus{border-color:var(--blue);}
+  .sb-select{width:100%;background:var(--navy3);border:1px solid #323a63;color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;margin-top:6px;}
+  .sb-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:12.5px;font-weight:600;cursor:pointer;margin-top:8px;}
+  .sb-btn:hover{background:var(--blue-d);}
+  .sb-btn.secondary{background:#2a3157;}
+  .sb-btn.secondary:hover{background:#333c72;}
+  .sb-preset-row{display:flex;gap:6px;}
+  .sb-preset{flex:1;background:var(--navy3);border:1px solid #323a63;color:#dfe3f0;border-radius:8px;padding:7px 6px;font-size:11px;cursor:pointer;text-align:center;}
+  .sb-preset.active{border-color:var(--blue);background:#1c2a55;color:#fff;}
+  .sb-link{font-size:11.5px;color:#8fb1ff;text-decoration:none;display:inline-block;margin-top:6px;}
+  .sb-caption{font-size:11px;color:#8890b0;margin-top:6px;line-height:1.5;}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:999px;}
+  .badge.ok{background:#0f3d2a;color:#4ade80;}
+  .badge.warn{background:#4a3a10;color:#facc15;}
+  .badge-row{margin-top:6px;}
+  .sb-info-box{background:#1b2547;border:1px solid #2c3766;border-radius:8px;padding:9px 10px;font-size:11.5px;color:#c3cbea;line-height:1.5;}
+  #admin-expander summary{cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9aa3c4;list-style:none;display:flex;align-items:center;gap:6px;}
+  #admin-expander summary::-webkit-details-marker{display:none;}
+  #admin-expander summary:before{content:'▸';font-size:10px;}
+  #admin-expander[open] summary:before{content:'▾';}
+  #admin-expander{margin-top:2px;}
+  .admin-caption{font-size:10.5px;color:#7d84a8;margin-top:8px;word-break:break-all;line-height:1.5;}
+
+  #content{padding:20px 24px 60px;max-width:1100px;width:100%;margin:0 auto;}
+  .block-card{background:#fff8e6;border:1px solid #f2dfa0;border-radius:var(--radius);padding:22px;text-align:center;margin-top:60px;}
+  .block-card h3{margin:0 0 6px;color:#7a5b06;}
+  .block-card p{margin:0;color:#8a6c1c;font-size:13.5px;}
+
+  .tabbar{display:flex;gap:4px;background:#fff;border-bottom:1px solid var(--line);padding:0 24px;}
+  .tabbtn{padding:14px 6px;margin-right:22px;background:none;border:none;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
+  .tabbtn.active{color:var(--blue);border-bottom-color:var(--blue);}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;}
+  .card h4{margin:0 0 14px;font-size:14px;display:flex;align-items:center;gap:8px;}
+  .step-num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;}
+
+  .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .uploader{border:2px dashed #cfd5e6;border-radius:10px;padding:26px 12px;text-align:center;cursor:pointer;transition:.15s;position:relative;background:#fafbfd;}
+  .uploader:hover{border-color:var(--blue);background:#f2f6ff;}
+  .uploader .icon{font-size:26px;margin-bottom:6px;}
+  .uploader .label{font-size:12.5px;color:var(--muted);font-weight:600;}
+  .uploader .hint{font-size:11px;color:var(--muted2);margin-top:2px;}
+  .uploader input[type=file]{display:none;}
+  .uploader .count-badge{position:absolute;top:8px;right:8px;background:var(--blue);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;}
+  .thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center;}
+  .thumbs img{width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--line);}
+  .uploader.has-file{border-style:solid;border-color:var(--green);background:#f4fbf6;}
+  .preview-single img{max-width:100%;max-height:150px;border-radius:8px;margin-top:8px;}
+
+  textarea.promptbox{width:100%;min-height:90px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;resize:vertical;background:#fafbfd;}
+  textarea.promptbox:focus{outline:none;border-color:var(--blue);}
+  .row{display:flex;gap:14px;}
+  .row > *{flex:1;}
+  label.small-label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;}
+  select.field, input.field{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;background:#fff;}
+
+  .statbox{background:#f5f7fb;border:1px solid var(--line);border-radius:10px;padding:12px 14px;flex:1;}
+  .statbox .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
+  .statbox .val{font-size:20px;font-weight:700;margin-top:2px;}
+  .statbox.money .val{color:var(--green);}
+  .stat-row{display:flex;gap:12px;margin-bottom:10px;}
+  .caption{font-size:11px;color:var(--muted2);line-height:1.5;}
+
+  .primary-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:9px;padding:13px;font-size:14.5px;font-weight:700;cursor:pointer;margin-top:12px;}
+  .primary-btn:hover{background:var(--blue-d);}
+  .primary-btn.stop{background:var(--red);}
+  .primary-btn:disabled{background:#c8cede;cursor:not-allowed;}
+  .warn-caption{color:var(--yellow);font-size:12px;margin-top:8px;text-align:center;}
+  .error-box{background:var(--red-bg);color:var(--red);border-radius:8px;padding:10px 12px;font-size:12.5px;margin-top:10px;}
+
+  .progress-wrap{background:#e9ecf4;border-radius:999px;height:9px;overflow:hidden;margin:8px 0;}
+  .progress-fill{background:var(--blue);height:100%;transition:width .3s;}
+  .progress-label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;}
+  .status-msg{border-radius:8px;padding:9px 12px;font-size:12.5px;margin-top:10px;}
+  .status-msg.success{background:var(--green-bg);color:var(--green);}
+  .status-msg.warn{background:var(--yellow-bg);color:var(--yellow);}
+
+  details.log-expander{margin-top:12px;border:1px solid var(--line);border-radius:8px;}
+  details.log-expander summary{padding:9px 12px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text);}
+  .log-lines{max-height:180px;overflow:auto;background:#0f172a;color:#c7d2fe;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.3px;padding:10px 12px;border-radius:0 0 8px 8px;line-height:1.6;}
+  .log-lines div{white-space:pre-wrap;}
+
+  .summary-badges{display:flex;gap:10px;margin-bottom:12px;}
+  .sum-badge{flex:1;border-radius:9px;padding:12px 14px;font-weight:700;font-size:13px;}
+  .sum-badge.ok{background:var(--green-bg);color:var(--green);}
+  .sum-badge.err{background:var(--red-bg);color:var(--red);}
+  .sum-badge .n{font-size:19px;display:block;margin-top:2px;}
+  .download-btn{width:100%;background:var(--green);color:#fff;border:none;border-radius:9px;padding:11px;font-weight:700;font-size:13.5px;cursor:pointer;}
+  .download-btn:hover{opacity:.92;}
+  .err-row{font-size:12px;padding:6px 0;border-bottom:1px solid var(--line);}
+  .err-row b{color:var(--red);}
+
+  .result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:12px;}
+  .result-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line);}
+
+  .admin-section{margin-top:22px;}
+  .admin-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .admin-header h3{margin:0;font-size:15px;}
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0;}
+  .filter-btn{background:#f0f2f8;border:1px solid var(--line);color:var(--text);border-radius:999px;padding:6px 14px;font-size:12px;cursor:pointer;}
+  .filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+  table.data-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+  table.data-table th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid var(--line);}
+  table.data-table td{padding:8px 10px;border-bottom:1px solid #f0f1f6;}
+  table.data-table tr:hover td{background:#f7f9fc;}
+  .empty-note{color:var(--muted2);font-size:12.5px;padding:16px 0;text-align:center;}
+
+  .link-btn{background:#eef2fb;color:var(--blue);border:1px solid #d7e2fb;border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;}
+
+  @media (max-width:820px){
+    #app{flex-direction:column;}
+    #sidebar{width:100%;}
+    .upload-grid,.row{grid-template-columns:1fr;flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <div id="sidebar">
+    <div class="sb-block">
+      <div class="sb-title">🔑 API Key</div>
+      <input class="sb-input" id="apiKeyInput" type="password" placeholder="Dán Gemini API Key...">
+      <button class="sb-btn" id="saveKeyBtn">💾 Lưu key</button>
+      <div class="badge-row" id="apiKeyBadge"></div>
+      <a class="sb-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Lấy API Key miễn phí →</a>
+    </div>
+    <div class="sb-divider"></div>
+
+    <div class="sb-block">
+      <div class="sb-title">👤 Người dùng</div>
+      <input class="sb-input" id="userNameInput" type="text" placeholder="VD: Minh, Lan, Hùng...">
+      <div class="badge-row" id="userBadge"></div>
+      <div class="sb-caption">Dùng để ghi nhận vào lịch sử thanh toán, vì app đang dùng chung 1 API Key.</div>
+    </div>
+    <div class="sb-divider"></div>
+
+    <div class="sb-block">
+      <div class="sb-title">⚙️ Cấu hình model</div>
+      <div class="sb-preset-row">
+        <div class="sb-preset" id="presetCheap">⚡ Rẻ nhất (512px)</div>
+        <div class="sb-preset" id="presetQuality">🎯 Chất lượng (Flash)</div>
+      </div>
+      <select class="sb-select" id="modelSelect">
+        <option value="gemini-3.1-flash-image">Nano Banana 2 — Khuyến nghị</option>
+        <option value="gemini-3.1-flash-lite-image">Nano Banana 2 Lite — Nhanh &amp; rẻ nhất</option>
+        <option value="gemini-3-pro-image">Nano Banana Pro — Chất lượng cao nhất</option>
+        <option value="gemini-2.5-flash-image">Nano Banana gốc (2.5)</option>
+      </select>
+      <select class="sb-select" id="resSelect">
+        <option value="auto">Độ phân giải: Tự động (mặc định)</option>
+        <option value="512">512px — Tiết kiệm</option>
+        <option value="1K">1K (~1024px)</option>
+        <option value="2K">2K (~2048px) — Khuyến nghị</option>
+        <option value="4K">4K (~4096px)</option>
+      </select>
+    </div>
+    <div class="sb-divider"></div>
+
+    <div class="sb-block">
+      <div class="sb-title">📤 Xuất file</div>
+      <select class="sb-select" id="formatSelect" style="margin-top:0;">
+        <option value="PNG">Định dạng: PNG</option>
+        <option value="JPG">Định dạng: JPG</option>
+      </select>
+      <div id="jpgQualityWrap" style="display:none;margin-top:8px;">
+        <div class="sb-caption">Chất lượng JPG: <span id="jpgQualityVal">92</span></div>
+        <input type="range" id="jpgQuality" min="70" max="100" value="92" style="width:100%;">
+      </div>
+      <select class="sb-select" id="sizeSelect">
+        <option value="original">Kích thước: Giữ nguyên</option>
+        <option value="9:16">9:16 (1080x1920)</option>
+        <option value="3:4">3:4 (1080x1440)</option>
+        <option value="ig">Instagram (1080x1080)</option>
+        <option value="doc">Dọc (1080x1350)</option>
+        <option value="16:9">16:9 (1920x1080)</option>
+        <option value="custom">Tuỳ chỉnh...</option>
+      </select>
+      <div id="customSizeWrap" style="display:none;" class="row" style="margin-top:8px;">
+        <input class="sb-input" id="customW" type="number" min="512" max="4096" placeholder="Rộng (px)" value="1024">
+        <input class="sb-input" id="customH" type="number" min="512" max="4096" placeholder="Cao (px)" value="1024">
+      </div>
+    </div>
+    <div class="sb-divider"></div>
+
+    <div class="sb-block">
+      <div class="sb-title">💾 Kết quả</div>
+      <div class="sb-info-box">📦 Sau khi xử lý xong, bạn tải toàn bộ ảnh về máy qua nút <b>⬇️ Tải tất cả kết quả (.zip)</b> ở cuối mỗi lượt chạy.</div>
+    </div>
+    <div class="sb-divider"></div>
+
+    <div class="sb-block">
+      <div class="sb-title" style="margin-bottom:2px;">🔒 Khu vực quản trị</div>
+      <details id="admin-expander">
+        <summary>Đăng nhập quản trị</summary>
+        <div id="adminLoggedOutView" style="margin-top:10px;">
+          <input class="sb-input" id="adminPassInput" type="password" placeholder="Mật khẩu quản trị">
+          <button class="sb-btn secondary" id="adminLoginBtn">Đăng nhập</button>
+        </div>
+        <div id="adminLoggedInView" style="display:none;margin-top:10px;">
+          <span class="badge ok">● Đang xem với quyền quản trị</span>
+          <button class="sb-btn secondary" id="adminLogoutBtn">Đăng xuất quản trị</button>
+          <div class="admin-caption">URL webhook hiện tại:</div>
+          <input class="sb-input" id="webhookInput" type="text" placeholder="URL Apps Script webhook (để trống = không đồng bộ)">
+          <div class="admin-caption">Link xem Google Sheet (tuỳ chọn):</div>
+          <input class="sb-input" id="sheetViewInput" type="text" placeholder="Link chia sẻ (chỉ xem) của Google Sheet">
+          <button class="sb-btn secondary" id="checkSheetBtn">🔧 Kiểm tra kết nối Google Sheet</button>
+          <div class="admin-caption" id="sheetCheckResult"></div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <div id="main-col">
+    <div id="topbar">
+      <div class="brand"><span class="ico">🪄</span> Photo Swap Studio <span class="sub">Thay trang phục &amp; in hoạ tiết hàng loạt bằng AI</span></div>
+      <div class="today">Hôm nay<b id="todayStat">$0.00 (0 ảnh)</b></div>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   CONFIG — mirrors app_web.py
+========================================================================= */
+const MODEL_OPTIONS_LABEL = {
+  "gemini-3.1-flash-image":"Nano Banana 2 — Khuyến nghị",
+  "gemini-3.1-flash-lite-image":"Nano Banana 2 Lite — Nhanh & rẻ nhất",
+  "gemini-3-pro-image":"Nano Banana Pro — Chất lượng cao nhất",
+  "gemini-2.5-flash-image":"Nano Banana gốc (2.5)"
+};
+const RES_LABEL = {
+  "auto":"Tự động (mặc định)", "512":"512px — Tiết kiệm", "1K":"1K (~1024px)",
+  "2K":"2K (~2048px) — Khuyến nghị", "4K":"4K (~4096px)"
+};
+// Bảng giá ƯỚC TÍNH TRƯỚC KHI CHẠY (USD/ảnh theo model + tier)
+const PRICE_TABLE = {
+  "gemini-3.1-flash-image":       {"512":0.045, "1K":0.067, "2K":0.101, "4K":0.151},
+  "gemini-3.1-flash-lite-image":  {"512":0.022, "1K":0.034, "2K":0.050, "4K":0.070},
+  "gemini-3-pro-image":           {"512":0.090, "1K":0.134, "2K":0.134, "4K":0.240},
+  "gemini-2.5-flash-image":       {"512":0.039, "1K":0.039, "2K":0.039, "4K":0.039}
+};
+// Giá theo TOKEN THẬT (USD / 1 triệu token) — dùng để tính tiền chính xác sau khi xử lý xong
+const MODEL_TOKEN_PRICING = {
+  "gemini-3.1-flash-image":       {input_per_1m:0.50, output_text_per_1m:3.00,  output_image_per_1m:60.00},
+  "gemini-3.1-flash-lite-image":  {input_per_1m:0.25, output_text_per_1m:1.50,  output_image_per_1m:30.00},
+  "gemini-3-pro-image":           {input_per_1m:2.00, output_text_per_1m:12.00, output_image_per_1m:120.00},
+  "gemini-2.5-flash-image":       {input_per_1m:0.30, output_text_per_1m:2.50,  output_image_per_1m:30.00}
+};
+const MAX_RETRIES = 4;
+const RETRY_BASE_DELAY_MS = 5000;
+const USD_TO_VND = 26000;
+
+const SIZE_PRESETS = {
+  "original": null,
+  "9:16": [1080,1920],
+  "3:4": [1080,1440],
+  "ig": [1080,1080],
+  "doc": [1080,1350],
+  "16:9": [1920,1080],
+  "custom": "custom"
+};
+
+const PATTERN_POSITIONS = {
+  "Giữa ngực": "chính giữa ngực áo",
+  "Ngực trái (như logo thương hiệu)": "ngực trái áo, kích thước nhỏ như vị trí logo thương hiệu",
+  "Ngực phải": "ngực phải áo",
+  "Toàn thân áo (in full)": "phủ toàn bộ mặt trước áo",
+  "Tay áo": "phần tay áo",
+  "Lưng áo": "chính giữa lưng áo"
+};
+const PATTERN_SIZES = {
+  "Nhỏ (như logo)": "kích thước nhỏ, khoảng 8-10cm",
+  "Vừa": "kích thước vừa phải, cân đối với ngực áo",
+  "Lớn (chiếm phần lớn áo)": "kích thước lớn, chiếm phần lớn diện tích áo"
+};
+
+const DEFAULT_PROMPT_1 = "Thay áo trong ảnh thứ 2 vào người ở ảnh thứ 1, giữ nguyên dáng người, khuôn mặt và nền.";
+const DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwU8EfOeV_tmh7y-7jD85gjKJP_4vpxUI3pdyo8whzxBzc3Gx6ez77CwUijDex-PLoaMw/exec";
+const ADMIN_PASSWORD = "doimatkhaunay123";
+
+const LOG_FIELDS = ["timestamp","user","model","resolution","format","ref_image","status","prompt_tokens","output_tokens","cost_usd","cost_vnd","cost_source"];
+const LOG_FIELDS_VN = {
+  timestamp:"Thời gian", user:"Người dùng", model:"Model", resolution:"Độ phân giải", format:"Định dạng",
+  ref_image:"Ảnh/Hoạ tiết", status:"Trạng thái", prompt_tokens:"Token đầu vào", output_tokens:"Token đầu ra",
+  cost_usd:"Chi phí (USD)", cost_vnd:"Chi phí (VNĐ)", cost_source:"Nguồn tính giá"
+};
+const NON_BILLABLE_STATUSES = new Set(["error"]);
+
+/* =========================================================================
+   STATE
+========================================================================= */
+const state = {
+  apiKey:"", userName:"",
+  model:"gemini-3.1-flash-image", resolution:"2K",
+  exportFormat:"PNG", jpgQuality:92, exportSize:"original", customW:1024, customH:1024,
+  adminLoggedIn:false, webhookUrl:DEFAULT_WEBHOOK_URL, sheetViewUrl:"",
+  remoteLastStatus:null, remoteLastError:"",
+  activeTab:1,
+  tab1:{source:null, refs:[], prompt:DEFAULT_PROMPT_1, running:false, stopRequested:false,
+        idx:0, total:0, startTime:0, log:[], results:[], errors:[], usedNames:new Set(), hasRun:false, stoppedEarly:false},
+  tab2:{source:null, refs:[], position:Object.keys(PATTERN_POSITIONS)[0], size:Object.keys(PATTERN_SIZES)[1], prompt:"", running:false, stopRequested:false,
+        idx:0, total:0, startTime:0, log:[], results:[], errors:[], usedNames:new Set(), hasRun:false, stoppedEarly:false}
+};
+state.tab2.prompt = buildTab2Prompt(state.tab2.position, state.tab2.size);
+function buildTab2Prompt(pos, size){
+  return `In hoạ tiết ở ảnh thứ 2 lên ${PATTERN_POSITIONS[pos]} của người trong ảnh thứ 1, ${PATTERN_SIZES[size]}. Giữ nguyên dáng người, khuôn mặt, form áo, nếp gấp vải, ánh sáng và bóng đổ — hoạ tiết in tự nhiên như thật, bám theo bề mặt vải.`;
+}
+
+/* =========================================================================
+   HELPERS
+========================================================================= */
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function fileToBase64(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=> res(r.result.split(",")[1]);
+    r.onerror = ()=> rej(new Error("Không đọc được file"));
+    r.readAsDataURL(file);
+  });
+}
+function b64ToBlob(b64, mime){
+  const bytes = atob(b64);
+  const arr = new Uint8Array(bytes.length);
+  for(let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+function fmtUSD(n){ return "$"+(n||0).toFixed(2); }
+function fmtVND(n){ return Math.round(n||0).toLocaleString("vi-VN")+"₫"; }
+function nowStr(){
+  const d = new Date();
+  const pad = n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+function timeOnly(){ return new Date().toTimeString().slice(0,8); }
+function getUniqueName(baseName, ext, usedNames){
+  let candidate = baseName+ext, counter=1;
+  while(usedNames.has(candidate)){ candidate = `${baseName}_${counter}${ext}`; counter++; }
+  usedNames.add(candidate);
+  return candidate;
+}
+function stemName(filename){ return filename.replace(/\.[^/.]+$/, ""); }
+function estimatePreRunCost(count){
+  const tier = state.resolution==="auto" ? "1K" : state.resolution;
+  const unit = (PRICE_TABLE[state.model] && PRICE_TABLE[state.model][tier]) || 0.05;
+  return {usd: unit*count, unit};
+}
+
+/* real cost from usageMetadata returned by Gemini REST API (camelCase) */
+function computeCostFromUsage(modelId, usageMetadata){
+  if(!usageMetadata) return null;
+  const pricing = MODEL_TOKEN_PRICING[modelId];
+  if(!pricing) return null;
+  const promptTokens = usageMetadata.promptTokenCount || 0;
+  const outputTokens = usageMetadata.candidatesTokenCount || 0;
+  let imageOutTokens = 0, textOutTokens = 0;
+  const details = usageMetadata.candidatesTokensDetails;
+  if(details && details.length){
+    details.forEach(d=>{
+      const modality = String(d.modality||"").toUpperCase();
+      const count = d.tokenCount || 0;
+      if(modality.includes("IMAGE")) imageOutTokens += count; else textOutTokens += count;
+    });
+  } else {
+    imageOutTokens = outputTokens;
+  }
+  const costUsd = (promptTokens/1e6)*pricing.input_per_1m + (textOutTokens/1e6)*pricing.output_text_per_1m + (imageOutTokens/1e6)*pricing.output_image_per_1m;
+  return {costUsd, promptTokens, outputTokens};
+}
+
+function resizeImageBlob(blob, targetWH){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    const url = URL.createObjectURL(blob);
+    img.onload = ()=>{
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWH[0]; canvas.height = targetWH[1];
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img,0,0,targetWH[0],targetWH[1]);
+      URL.revokeObjectURL(url);
+      resolve(canvas);
+    };
+    img.src = url;
+  });
+}
+async function finalizeImage(blob){
+  // apply resize (custom size) then encode to chosen format
+  const sizeKey = state.exportSize;
+  let targetWH = null;
+  if(sizeKey!=="original"){
+    targetWH = sizeKey==="custom" ? [state.customW, state.customH] : SIZE_PRESETS[sizeKey];
+  }
+  const mime = state.exportFormat==="JPG" ? "image/jpeg" : "image/png";
+  const quality = state.exportFormat==="JPG" ? state.jpgQuality/100 : undefined;
+
+  if(targetWH){
+    const canvas = await resizeImageBlob(blob, targetWH);
+    return await new Promise(res=> canvas.toBlob(b=>res(b), mime, quality));
+  }
+  if(state.exportFormat==="JPG"){
+    const canvas = await resizeImageBlob(blob, null).then(async ()=>{
+      // need actual image dims; reload
+      const img = new Image(); const url = URL.createObjectURL(blob);
+      await new Promise(r=>{img.onload=r; img.src=url;});
+      const c = document.createElement("canvas"); c.width=img.width; c.height=img.height;
+      const ctx = c.getContext("2d"); ctx.fillStyle="#fff"; ctx.fillRect(0,0,c.width,c.height); ctx.drawImage(img,0,0);
+      URL.revokeObjectURL(url);
+      return c;
+    });
+    return await new Promise(res=> canvas.toBlob(b=>res(b), mime, quality));
+  }
+  return blob; // PNG, giữ nguyên
+}
+
+/* =========================================================================
+   STORAGE (usage log)
+   - Trong khung preview của Claude: dùng window.storage (dùng chung mọi người
+     xem preview đó).
+   - Khi chạy như file HTML thường (mở trực tiếp, deploy GitHub Pages, v.v.):
+     window.storage KHÔNG tồn tại -> tự động chuyển sang localStorage của
+     trình duyệt (chỉ lưu trên MÁY/TRÌNH DUYỆT hiện tại, không tự chia sẻ
+     giữa các máy khác nhau). Muốn xem gộp log từ mọi máy, dùng nút
+     "Đồng bộ từ Google Sheet" ở khu Admin (cần Apps Script có doGet).
+========================================================================= */
+const HAS_ARTIFACT_STORAGE = (typeof window.storage !== "undefined");
+const LOCAL_STORAGE_KEY = "photoSwapStudio_usageLog";
+
+async function getUsageLog(){
+  try{
+    if(HAS_ARTIFACT_STORAGE){
+      const r = await window.storage.get("usage:log", true);
+      return r ? JSON.parse(r.value) : [];
+    }
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+async function appendUsageRow(row){
+  try{
+    const cur = await getUsageLog();
+    cur.push(row);
+    if(HAS_ARTIFACT_STORAGE){
+      await window.storage.set("usage:log", JSON.stringify(cur), true);
+    } else {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cur));
+    }
+  }catch(e){ console.error("storage error", e); }
+}
+async function refreshTodayStat(){
+  const log = adminRemoteLog || await getUsageLog();
+  const today = new Date().toDateString();
+  const todays = log.filter(e=> new Date(String(e.timestamp).replace(" ","T")).toDateString()===today);
+  const usd = todays.reduce((s,e)=>s+(Number(e.cost_usd)||0),0);
+  document.getElementById("todayStat").textContent = `${fmtUSD(usd)} (${todays.length} ảnh)`;
+}
+
+/* Đồng bộ THẬT từ Google Sheet trung tâm — đọc chung được ở mọi máy.
+   Yêu cầu Apps Script Web App có thêm hàm doGet(e) trả về JSON là mảng các
+   dòng log (xem hướng dẫn/mẫu code đi kèm phần giải thích). */
+let adminRemoteLog = null;
+async function fetchSheetLog(){
+  if(!state.webhookUrl) return {ok:false, msg:"Chưa cấu hình URL webhook."};
+  try{
+    const resp = await fetch(state.webhookUrl, {method:"GET"});
+    if(!resp.ok) throw new Error("HTTP "+resp.status);
+    const data = await resp.json();
+    if(!Array.isArray(data)) throw new Error("Phản hồi không phải danh sách JSON — Apps Script cần hàm doGet trả về mảng log.");
+    adminRemoteLog = data;
+    return {ok:true, msg:`Đã tải ${data.length} dòng từ Google Sheet.`};
+  }catch(e){
+    return {ok:false, msg:"Không đọc được từ Google Sheet (Apps Script cần có doGet trả JSON): "+e.message};
+  }
+}
+
+/* =========================================================================
+   REMOTE LOG (Google Sheet webhook) — mirrors log_usage() / test_remote_webhook()
+========================================================================= */
+async function sendRemoteLog(row){
+  if(!state.webhookUrl) return;
+  try{
+    await fetch(state.webhookUrl, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(row)});
+    state.remoteLastStatus = "ok"; state.remoteLastError = "";
+  }catch(err){
+    state.remoteLastStatus = "error"; state.remoteLastError = String(err.message||err);
+  }
+}
+async function testRemoteWebhook(){
+  if(!state.webhookUrl) return {ok:false, msg:"Chưa cấu hình URL webhook."};
+  if(!state.webhookUrl.startsWith("http")){
+    return {ok:false, msg:`Giá trị đang cấu hình không phải là URL hợp lệ. URL Web App của Apps Script phải bắt đầu bằng 'https://script.google.com/macros/s/.../exec'.`};
+  }
+  const testRow = {}; LOG_FIELDS.forEach(f=> testRow[f]="");
+  Object.assign(testRow, {timestamp:nowStr(), user:"[TEST KẾT NỐI]", status:"test", cost_usd:0, cost_vnd:0});
+  try{
+    await fetch(state.webhookUrl, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(testRow)});
+    return {ok:true, msg:"Đã gửi yêu cầu kiểm tra. Do trình duyệt chặn đọc phản hồi cross-origin (CORS), hãy mở Google Sheet để xác nhận có dòng '[TEST KẾT NỐI]' mới không."};
+  }catch(e){
+    return {ok:false, msg:"Không gửi được: "+e.message};
+  }
+}
+
+/* =========================================================================
+   GEMINI API CALL (with retry, matches client.models.generate_content)
+========================================================================= */
+async function callGeminiOnce(promptText, srcB64, srcMime, refB64, refMime){
+  const parts = [{text: promptText}, {inlineData:{mimeType:srcMime, data:srcB64}}, {inlineData:{mimeType:refMime, data:refB64}}];
+  const generationConfig = { responseModalities: ["TEXT","IMAGE"] };
+  if(state.resolution !== "auto"){
+    generationConfig.imageConfig = { imageSize: state.resolution };
+  }
+  const body = { contents: [{ parts }], generationConfig };
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${state.model}:generateContent?key=${encodeURIComponent(state.apiKey)}`;
+  const resp = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+  if(!resp.ok){
+    const errText = await resp.text().catch(()=> "");
+    throw new Error(`API lỗi ${resp.status}: ${errText.slice(0,200)}`);
+  }
+  return await resp.json();
+}
+async function callGeminiWithRetry(promptText, srcB64, srcMime, refB64, refMime, onRetryLog){
+  let lastErr;
+  for(let attempt=1; attempt<=MAX_RETRIES; attempt++){
+    try{
+      return await callGeminiOnce(promptText, srcB64, srcMime, refB64, refMime);
+    }catch(e){
+      lastErr = e;
+      if(attempt===MAX_RETRIES) throw e;
+      onRetryLog(`⏳ thử lại lần ${attempt}/${MAX_RETRIES}...`);
+      await sleep(RETRY_BASE_DELAY_MS * Math.pow(2, attempt-1));
+    }
+  }
+  throw lastErr;
+}
+function extractImagePart(response){
+  const cand = response.candidates && response.candidates[0];
+  const partsOut = (cand && cand.content && cand.content.parts) || [];
+  for(const p of partsOut){
+    const inline = p.inlineData || p.inline_data;
+    if(inline && inline.data) return { mime: inline.mimeType || inline.mime_type || "image/png", data: inline.data };
+  }
+  return null;
+}
+
+/* =========================================================================
+   PROCESSING (batch) — mirrors the per-image loop in app_web.py
+========================================================================= */
+async function processBatch(tabKey){
+  const t = state[tabKey];
+  const missing = [];
+  if(!t.source) missing.push(tabKey==="tab1" ? "ảnh gốc (người mẫu)" : "ảnh gốc (người mặc áo)");
+  if(!t.refs.length) missing.push(tabKey==="tab1" ? "ảnh tham chiếu (trang phục)" : "ảnh hoạ tiết/logo");
+  if(!state.apiKey) missing.push("API Key (nhập ở thanh bên trái rồi bấm 'Lưu key')");
+  if(!state.userName) missing.push("Tên của bạn (để ghi nhận chi phí, nhập ở thanh bên trái)");
+  if(missing.length){ t.startError = "❌ Chưa thể bắt đầu, còn thiếu: "+missing.join(", "); render(); return; }
+  t.startError = null;
+
+  t.running=true; t.stopRequested=false; t.hasRun=false; t.stoppedEarly=false;
+  t.idx=0; t.total=t.refs.length; t.startTime=Date.now(); t.log=[]; t.results=[]; t.errors=[]; t.usedNames=new Set();
+  render();
+
+  const srcB64 = await fileToBase64(t.source.file);
+  const srcMime = t.source.file.type || "image/png";
+
+  const modelLabel = MODEL_OPTIONS_LABEL[state.model];
+  const resLabel = RES_LABEL[state.resolution];
+
+  for(let i=0;i<t.refs.length;i++){
+    if(t.stopRequested){ t.stoppedEarly = true; break; }
+    const ref = t.refs[i];
+    t.log.push(`🔄 Đang xử lý (${i+1}/${t.total}): ${ref.file.name}`);
+    render();
+
+    let logStatus, usageResult=null, response=null;
+    try{
+      const refB64 = await fileToBase64(ref.file);
+      const refMime = ref.file.type || "image/png";
+      response = await callGeminiWithRetry(t.prompt, srcB64, srcMime, refB64, refMime, (msg)=>{ t.log.push(`${ref.file.name}: ${msg}`); render(); });
+
+      const imgPart = extractImagePart(response);
+      if(imgPart){
+        let blob = b64ToBlob(imgPart.data, imgPart.mime);
+        blob = await finalizeImage(blob);
+        const ext = state.exportFormat==="PNG" ? ".png" : ".jpg";
+        const baseName = stemName(ref.file.name) + (tabKey==="tab1" ? "-result" : "-pattern-result");
+        const uniqueName = getUniqueName(baseName, ext, t.usedNames);
+        const url = URL.createObjectURL(blob);
+        t.results.push({name:uniqueName, url, blob});
+        t.log.push(`✅ Xong: ${ref.file.name}`);
+        logStatus = "success";
+      } else {
+        t.log.push(`⚠️ Không nhận được ảnh kết quả cho: ${ref.file.name}`);
+        t.errors.push({name:ref.file.name, reason:"Không nhận được ảnh kết quả từ model"});
+        logStatus = "no_image";
+      }
+      usageResult = computeCostFromUsage(state.model, response.usageMetadata);
+    }catch(err){
+      t.log.push(`❌ Lỗi với ${ref.file.name}: ${err.message}`);
+      t.errors.push({name:ref.file.name, reason:err.message});
+      logStatus = "error";
+      usageResult = null;
+    }
+
+    let costUsd, pTokens, oTokens, costSource;
+    if(usageResult){
+      costUsd = usageResult.costUsd; pTokens = usageResult.promptTokens; oTokens = usageResult.outputTokens; costSource = "token thật";
+    } else {
+      const tier = state.resolution==="auto" ? "1K" : state.resolution;
+      costUsd = (PRICE_TABLE[state.model] && PRICE_TABLE[state.model][tier]) || 0.05;
+      pTokens = null; oTokens = null; costSource = "ước tính (không lấy được token thật)";
+    }
+    if(NON_BILLABLE_STATUSES.has(logStatus)){ costUsd = 0; costSource = "không tính phí (lỗi)"; }
+
+    const row = {
+      timestamp: nowStr(), user: state.userName || "Không rõ", model: modelLabel, resolution: resLabel,
+      format: state.exportFormat, ref_image: ref.file.name, status: logStatus,
+      prompt_tokens: pTokens==null?"":pTokens, output_tokens: oTokens==null?"":oTokens,
+      cost_usd: Math.round(costUsd*10000)/10000, cost_vnd: Math.round(costUsd*USD_TO_VND), cost_source: costSource
+    };
+    await appendUsageRow(row);
+    sendRemoteLog(row);
+
+    t.idx = i+1;
+    render();
+  }
+
+  t.running=false; t.hasRun=true;
+  render();
+  refreshTodayStat();
+  if(state.adminLoggedIn) renderAdminTables();
+}
+
+async function downloadZip(tabKey){
+  const t = state[tabKey];
+  if(!t.results.length) return;
+  const zip = new JSZip();
+  t.results.forEach(r=> zip.file(r.name, r.blob));
+  const content = await zip.generateAsync({type:"blob"});
+  const url = URL.createObjectURL(content);
+  const a = document.createElement("a");
+  a.href = url; a.download = tabKey==="tab1" ? "photo_swap_results.zip" : "pattern_results.zip";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+
+/* =========================================================================
+   RENDER: SIDEBAR bits
+========================================================================= */
+function renderSidebarStatus(){
+  document.getElementById("apiKeyBadge").innerHTML = state.apiKey
+    ? `<span class="badge ok">● Đã kết nối</span>`
+    : `<span class="badge warn">● Chưa có API key</span>`;
+  document.getElementById("userBadge").innerHTML = state.userName
+    ? "" : `<span class="badge warn">● Nhập tên để ghi nhận chi phí</span>`;
+}
+
+/* =========================================================================
+   RENDER: MAIN CONTENT
+========================================================================= */
+function render(){
+  renderSidebarStatus();
+  const content = document.getElementById("content");
+  if(!state.userName){
+    content.innerHTML = `
+      <div class="block-card">
+        <h3>👋 Chào bạn, trước khi bắt đầu...</h3>
+        <p>App đang dùng chung 1 API Key nên cần bạn nhập <b>tên/nickname</b> ở mục "Người dùng" trên thanh bên trái trước, để hệ thống ghi nhận đúng chi phí của từng người.</p>
+      </div>`;
+    return;
+  }
+
+  content.innerHTML = `
+    <div class="tabbar" style="margin:-20px -24px 20px;border-radius:0;">
+      <button class="tabbtn ${state.activeTab===1?'active':''}" data-tab="1">🔄 Thay trang phục</button>
+      <button class="tabbtn ${state.activeTab===2?'active':''}" data-tab="2">🎨 Thêm hoạ tiết vào áo</button>
+    </div>
+    <div id="tabPane"></div>
+    <div id="adminPane"></div>
+  `;
+  document.querySelectorAll(".tabbtn").forEach(b=> b.onclick = ()=>{ state.activeTab = +b.dataset.tab; render(); });
+
+  renderTabPane();
+  if(state.adminLoggedIn) renderAdminSection();
+}
+
+function renderTabPane(){
+  const key = state.activeTab===1 ? "tab1" : "tab2";
+  const t = state[key];
+  const pane = document.getElementById("tabPane");
+
+  const uploadStepHtml = `
+    <div class="card">
+      <h4><span class="step-num">1</span> Tải ảnh lên</h4>
+      <div class="upload-grid">
+        <div>
+          <label class="small-label">${key==="tab1" ? "📷 Ảnh gốc (người mẫu)" : "📷 Ảnh gốc (người mặc áo)"}</label>
+          <div class="uploader ${t.source?'has-file':''}" id="srcUploader-${key}">
+            <input type="file" accept="image/*" id="srcInput-${key}">
+            ${t.source ? `<div class="preview-single"><img src="${t.source.url}"></div><div class="hint">${t.source.file.name}</div>`
+                       : `<div class="icon">🖼️</div><div class="label">${key==="tab1"?"Ảnh gốc":"Ảnh người mặc áo"}</div><div class="hint">kéo thả hoặc bấm để chọn</div>`}
+          </div>
+        </div>
+        <div>
+          <label class="small-label">${key==="tab1" ? "👕 Ảnh tham chiếu (trang phục) — có thể chọn nhiều ảnh" : "🎨 Ảnh hoạ tiết / logo / hình in — có thể chọn nhiều ảnh"}</label>
+          <div class="uploader ${t.refs.length?'has-file':''}" id="refUploader-${key}" style="position:relative;">
+            <input type="file" accept="image/*" multiple id="refInput-${key}">
+            ${t.refs.length ? `<div class="count-badge">${t.refs.length}</div><div class="thumbs">${t.refs.map(r=>`<img src="${r.url}">`).join("")}</div>`
+                            : `<div class="icon">📁</div><div class="label">${key==="tab1"?"Ảnh tham chiếu":"Ảnh hoạ tiết"}</div><div class="hint">kéo thả hoặc bấm để chọn</div>`}
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  let step2Html;
+  if(key==="tab1"){
+    step2Html = `
+      <div class="card">
+        <h4><span class="step-num">2</span> Mô tả yêu cầu</h4>
+        <textarea class="promptbox" id="promptBox-${key}">${t.prompt}</textarea>
+      </div>`;
+  } else {
+    step2Html = `
+      <div class="card">
+        <h4><span class="step-num">2</span> Vị trí & mô tả</h4>
+        <div class="row" style="margin-bottom:12px;">
+          <div>
+            <label class="small-label">Vị trí in hoạ tiết</label>
+            <select class="field" id="posSelect">${Object.keys(PATTERN_POSITIONS).map(p=>`<option ${p===t.position?'selected':''}>${p}</option>`).join("")}</select>
+          </div>
+          <div>
+            <label class="small-label">Kích thước hoạ tiết</label>
+            <select class="field" id="sizeSelect2">${Object.keys(PATTERN_SIZES).map(s=>`<option ${s===t.size?'selected':''}>${s}</option>`).join("")}</select>
+          </div>
+        </div>
+        <label class="small-label">Mô tả cách in hoạ tiết (có thể chỉnh lại)</label>
+        <textarea class="promptbox" id="promptBox-${key}">${t.prompt}</textarea>
+      </div>`;
+  }
+
+  const count = t.refs.length;
+  const pre = estimatePreRunCost(count);
+  const canRun = !!(t.source && t.refs.length);
+
+  const step3Html = `
+    <div class="card">
+      <h4><span class="step-num">3</span> Xử lý</h4>
+      ${count ? `
+      <div class="stat-row">
+        <div class="statbox"><div class="lbl">${key==="tab1"?"Số ảnh sẽ xử lý":"Số hoạ tiết sẽ thử"}</div><div class="val">${count}</div></div>
+        <div class="statbox money"><div class="lbl">Chi phí ước tính (trước khi chạy)</div><div class="val">${fmtVND(pre.usd*USD_TO_VND)}</div></div>
+      </div>
+      <div class="caption">💡 Đây chỉ là số ước tính trước khi chạy (giả định prompt ngắn). Sau khi xử lý xong, tiền THẬT sẽ tính lại theo số token API trả về cho từng ảnh — xem mục Lịch sử sử dụng &amp; thanh toán (khu vực quản trị).<br>Tỷ giá quy đổi tạm tính: 1 USD ≈ ${USD_TO_VND.toLocaleString('vi-VN')}₫</div>` : ``}
+      <button class="primary-btn ${t.running?'stop':''}" id="runBtn-${key}">
+        ${t.running ? '⏹ Dừng tiến trình' : (key==="tab1" ? '🚀 Bắt đầu xử lý' : '🚀 Bắt đầu in hoạ tiết')}
+      </button>
+      ${!canRun && !t.running ? `<div class="warn-caption">⚠️ Vui lòng tải lên ảnh gốc và ít nhất một ảnh ${key==="tab1"?"tham chiếu":"hoạ tiết"} để bắt đầu.</div>` : ``}
+      ${t.startError ? `<div class="error-box">${t.startError}</div>` : ``}
+    </div>`;
+
+  let processingHtml = "";
+  if(t.running || (t.total>0 && !t.hasRun)){
+    const pct = t.total ? Math.round((t.idx/t.total)*100) : 0;
+    processingHtml = `
+      <div class="card">
+        <h4>⏳ Đang xử lý</h4>
+        <div class="progress-label"><span>${t.idx}/${t.total} ${key==="tab1"?"ảnh":"hoạ tiết"}</span><span>${pct}%</span></div>
+        <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <details class="log-expander" open><summary>📜 Nhật ký xử lý</summary>
+          <div class="log-lines">${t.log.slice(-40).map(l=>`<div>${l}</div>`).join("")}</div>
+        </details>
+      </div>`;
+  }
+
+  let summaryHtml = "";
+  if(t.hasRun){
+    const ok = t.results.length, err = t.errors.length, total = t.idx;
+    const elapsed = Math.round((Date.now()-t.startTime)/1000);
+    summaryHtml = `
+      <div class="card">
+        <h4>📋 Tổng kết</h4>
+        ${t.stoppedEarly ? `<div class="status-msg warn">⏹ Đã dừng theo yêu cầu — đã xử lý ${t.idx}/${t.total}.</div>` :
+          `<div class="status-msg success">✅ Hoàn tất trong ${elapsed}s</div>`}
+        <div class="summary-badges" style="margin-top:12px;">
+          <div class="sum-badge ok">✅ Thành công<span class="n">${ok}/${total}</span></div>
+          ${err ? `<div class="sum-badge err">⚠️ Lỗi<span class="n">${err}/${total}</span></div>` : ``}
+        </div>
+        ${ok ? `<div class="result-grid">${t.results.map(r=>`<img src="${r.url}" title="${r.name}">`).join("")}</div>
+               <button class="download-btn" id="zipBtn-${key}" style="margin-top:12px;">⬇️ Tải tất cả kết quả (.zip)</button>` : ``}
+        ${err ? `<details class="log-expander" style="margin-top:12px;"><summary>❌ Chi tiết ${err} ${key==="tab1"?"ảnh":"hoạ tiết"} lỗi</summary>
+              <div style="padding:8px 12px;">${t.errors.map(e=>`<div class="err-row"><b>${e.name}:</b> ${e.reason}</div>`).join("")}</div>
+            </details>` : ``}
+      </div>`;
+  }
+
+  pane.innerHTML = uploadStepHtml + step2Html + step3Html + processingHtml + summaryHtml;
+
+  const srcUp = document.getElementById(`srcUploader-${key}`);
+  const srcIn = document.getElementById(`srcInput-${key}`);
+  srcUp.onclick = ()=> srcIn.click();
+  srcIn.onchange = (e)=>{ const f = e.target.files[0]; if(!f) return; t.source = {file:f, url:URL.createObjectURL(f)}; render(); };
+
+  const refUp = document.getElementById(`refUploader-${key}`);
+  const refIn = document.getElementById(`refInput-${key}`);
+  refUp.onclick = ()=> refIn.click();
+  refIn.onchange = (e)=>{ const files = Array.from(e.target.files||[]); t.refs = files.map(f=>({file:f, url:URL.createObjectURL(f)})); render(); };
+
+  ["dragover","drop"].forEach(evt=>{
+    [srcUp, refUp].forEach(el=>{
+      el.addEventListener(evt, (ev)=>{
+        ev.preventDefault();
+        if(evt==="drop"){
+          const files = Array.from(ev.dataTransfer.files||[]);
+          if(!files.length) return;
+          if(el===srcUp){ t.source = {file:files[0], url:URL.createObjectURL(files[0])}; }
+          else { t.refs = files.map(f=>({file:f,url:URL.createObjectURL(f)})); }
+          render();
+        }
+      });
+    });
+  });
+
+  document.getElementById(`promptBox-${key}`).oninput = (e)=>{ t.prompt = e.target.value; };
+
+  if(key==="tab2"){
+    document.getElementById("posSelect").onchange = (e)=>{ t.position=e.target.value; t.prompt = buildTab2Prompt(t.position,t.size); document.getElementById(`promptBox-${key}`).value = t.prompt; };
+    document.getElementById("sizeSelect2").onchange = (e)=>{ t.size=e.target.value; t.prompt = buildTab2Prompt(t.position,t.size); document.getElementById(`promptBox-${key}`).value = t.prompt; };
+  }
+
+  document.getElementById(`runBtn-${key}`).onclick = ()=>{
+    if(t.running){ t.stopRequested = true; }
+    else{ processBatch(key); }
+  };
+  const zipBtn = document.getElementById(`zipBtn-${key}`);
+  if(zipBtn) zipBtn.onclick = ()=> downloadZip(key);
+}
+
+/* =========================================================================
+   RENDER: ADMIN SECTION — mirrors "Lịch sử sử dụng & thanh toán"
+========================================================================= */
+let adminDateFilter = {mode:"all", from:null, to:null};
+
+function renderAdminSection(){
+  const pane = document.getElementById("adminPane");
+  const storageNote = HAS_ARTIFACT_STORAGE
+    ? "Bảng dưới đây đọc từ storage dùng chung của khung preview này."
+    : "Bảng dưới đây đọc từ bộ nhớ cục bộ (localStorage) của TRÌNH DUYỆT này — mỗi máy/mỗi trình duyệt có dữ liệu riêng, không tự gộp giữa các máy. Bấm \"Đồng bộ từ Google Sheet\" bên dưới để xem số liệu gộp thật từ mọi máy (cần Apps Script có doGet).";
+  pane.innerHTML = `
+    <div class="card admin-section">
+      <div class="admin-header">
+        <h3>💳 Lịch sử sử dụng & thanh toán</h3>
+        <span class="badge ${state.webhookUrl?'ok':'warn'}">${state.webhookUrl?'☁️ Đang gửi log lên Google Sheet trung tâm':'⚠️ Chưa đồng bộ trung tâm — log chỉ lưu trên máy này'}</span>
+      </div>
+      <div class="caption">App dùng chung 1 API Key nên phần này ghi nhận theo <b>tên bạn tự nhập</b> ở thanh bên trái, không phải đăng nhập thật — mọi người cần tự giác nhập đúng tên để số liệu chính xác.</div>
+      ${state.webhookUrl && state.sheetViewUrl ? `<a class="link-btn" href="${state.sheetViewUrl}" target="_blank" rel="noopener" style="margin-top:10px;">📄 Mở Google Sheet tổng hợp (tất cả các máy)</a>` : ``}
+      <div class="caption" style="margin-top:8px;">${storageNote}
+        ${state.remoteLastStatus==="ok" ? `<br>✅ Lần gửi log gần nhất trong phiên này: thành công.` : ``}
+        ${state.remoteLastStatus==="error" ? `<br>❌ Lần gửi log gần nhất BỊ LỖI: ${state.remoteLastError}` : ``}
+      </div>
+      <div class="filter-row" style="margin-top:10px;">
+        <button class="link-btn" id="syncSheetBtn">🔄 Đồng bộ từ Google Sheet</button>
+        ${adminRemoteLog ? `<button class="filter-btn" id="clearSyncBtn">↩️ Quay lại dữ liệu cục bộ</button><span class="caption">Đang xem ${adminRemoteLog.length} dòng từ Google Sheet</span>` : ``}
+      </div>
+      <div class="admin-caption" id="syncResult" style="color:#6b7280;"></div>
+      <div class="caption" style="margin:10px 0;">File log được cộng dồn mãi mãi, không tự xoá hay reset qua ngày mới.</div>
+      <div class="stat-row" id="adminTotalsRow"></div>
+      <div class="filter-row">
+        <button class="filter-btn" data-f="today">📅 Hôm nay</button>
+        <button class="filter-btn" data-f="7d">📅 7 ngày qua</button>
+        <button class="filter-btn active" data-f="all">📅 Tất cả</button>
+        <input class="field" type="date" id="fromDate" style="max-width:150px;">
+        <input class="field" type="date" id="toDate" style="max-width:150px;">
+      </div>
+      <div id="adminTablesWrap"></div>
+      <details class="log-expander" style="margin-top:14px;">
+        <summary>📜 Xem chi tiết log</summary>
+        <div id="adminLogDetail" style="padding:6px 12px;max-height:260px;overflow:auto;"></div>
+      </details>
+      <button class="link-btn" id="downloadCsvBtn" style="margin-top:12px;">⬇️ Tải toàn bộ file log (.csv, cột tiếng Việt)</button>
+    </div>`;
+
+  document.querySelectorAll(".filter-btn").forEach(b=>{
+    b.onclick = ()=>{
+      document.querySelectorAll(".filter-btn").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      adminDateFilter = {mode:b.dataset.f, from:null, to:null};
+      document.getElementById("fromDate").value=""; document.getElementById("toDate").value="";
+      renderAdminTables();
+    };
+  });
+  document.getElementById("fromDate").onchange = (e)=>{ adminDateFilter={mode:"range", from:e.target.value, to:document.getElementById("toDate").value||null}; renderAdminTables(); };
+  document.getElementById("toDate").onchange = (e)=>{ adminDateFilter={mode:"range", from:document.getElementById("fromDate").value||null, to:e.target.value}; renderAdminTables(); };
+  document.getElementById("downloadCsvBtn").onclick = downloadCsv;
+  document.getElementById("syncSheetBtn").onclick = async ()=>{
+    const el = document.getElementById("syncResult");
+    el.textContent = "Đang đồng bộ...";
+    const r = await fetchSheetLog();
+    el.textContent = (r.ok?"✅ ":"❌ ") + r.msg;
+    renderAdminSection();
+  };
+  const clearBtn = document.getElementById("clearSyncBtn");
+  if(clearBtn) clearBtn.onclick = ()=>{ adminRemoteLog = null; renderAdminSection(); };
+
+  renderAdminTables();
+}
+
+function filterLog(log){
+  if(adminDateFilter.mode==="all") return log;
+  const now = new Date();
+  const parse = (e)=> new Date(e.timestamp.replace(" ","T"));
+  if(adminDateFilter.mode==="today"){
+    const d = now.toDateString();
+    return log.filter(e=> parse(e).toDateString()===d);
+  }
+  if(adminDateFilter.mode==="7d"){
+    const cutoff = now.getTime()-6*24*3600*1000;
+    return log.filter(e=> parse(e).getTime()>=cutoff);
+  }
+  if(adminDateFilter.mode==="range"){
+    return log.filter(e=>{
+      const d = parse(e);
+      if(adminDateFilter.from && d < new Date(adminDateFilter.from)) return false;
+      if(adminDateFilter.to && d > new Date(adminDateFilter.to+"T23:59:59")) return false;
+      return true;
+    });
+  }
+  return log;
+}
+
+async function renderAdminTables(){
+  const log = adminRemoteLog || await getUsageLog();
+  const totalVnd = log.reduce((s,e)=>s+(e.cost_vnd||0),0);
+  document.getElementById("adminTotalsRow").innerHTML = `
+    <div class="statbox money"><div class="lbl">💰 Tổng đã chi tiêu (từ trước đến giờ)</div><div class="val">${fmtVND(totalVnd)}</div></div>
+    <div class="statbox"><div class="lbl">🖼️ Tổng số ảnh đã xử lý (từ trước đến giờ)</div><div class="val">${log.length.toLocaleString('vi-VN')} ảnh</div></div>`;
+
+  const filtered = filterLog(log);
+
+  const byUser = {};
+  filtered.forEach(e=>{
+    const u = e.user || "Không rõ";
+    byUser[u] = byUser[u] || {n:0, usd:0, vnd:0};
+    byUser[u].n++; byUser[u].usd += (e.cost_usd||0); byUser[u].vnd += (e.cost_vnd||0);
+  });
+  const userRows = Object.entries(byUser).sort((a,b)=>b[1].vnd-a[1].vnd)
+    .map(([u,v])=>`<tr><td>${u}</td><td>${v.n}</td><td>${fmtUSD(v.usd)}</td><td>${fmtVND(v.vnd)}</td></tr>`).join("");
+
+  const byDay = {};
+  filtered.forEach(e=>{
+    const d = e.timestamp.slice(0,10);
+    byDay[d] = byDay[d] || {n:0, vnd:0};
+    byDay[d].n++; byDay[d].vnd += (e.cost_vnd||0);
+  });
+  const dayRows = Object.entries(byDay).sort((a,b)=> b[0].localeCompare(a[0]))
+    .map(([d,v])=>`<tr><td>${d}</td><td>${v.n}</td><td>${fmtVND(v.vnd)}</td></tr>`).join("");
+
+  const totalFilteredVnd = filtered.reduce((s,e)=>s+(e.cost_vnd||0),0);
+
+  document.getElementById("adminTablesWrap").innerHTML = `
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;">
+      <div>
+        <div class="small-label">📊 Chi phí theo từng người (trong khoảng đã chọn)</div>
+        <table class="data-table"><thead><tr><th>Người dùng</th><th>Số ảnh</th><th>Tổng (USD)</th><th>Tổng (VNĐ)</th></tr></thead>
+        <tbody>${userRows || `<tr><td colspan="4" class="empty-note">Chưa có dữ liệu</td></tr>`}</tbody></table>
+      </div>
+      <div>
+        <div class="small-label">📅 Chi tiêu theo từng ngày (trong khoảng đã chọn)</div>
+        <table class="data-table"><thead><tr><th>Ngày</th><th>Số ảnh</th><th>Tổng (VNĐ)</th></tr></thead>
+        <tbody>${dayRows || `<tr><td colspan="3" class="empty-note">Chưa có dữ liệu</td></tr>`}</tbody></table>
+      </div>
+    </div>
+    <div class="statbox money" style="margin-top:12px;max-width:260px;"><div class="lbl">Tổng trong khoảng đã chọn</div><div class="val">${fmtVND(totalFilteredVnd)}</div></div>
+  `;
+
+  document.getElementById("adminLogDetail").innerHTML = `
+    <table class="data-table"><thead><tr><th>${LOG_FIELDS_VN.timestamp}</th><th>${LOG_FIELDS_VN.user}</th><th>${LOG_FIELDS_VN.model}</th><th>${LOG_FIELDS_VN.resolution}</th><th>${LOG_FIELDS_VN.status}</th><th>${LOG_FIELDS_VN.cost_usd}</th><th>${LOG_FIELDS_VN.cost_vnd}</th><th>${LOG_FIELDS_VN.cost_source}</th></tr></thead>
+    <tbody>${filtered.slice().reverse().map(e=>`<tr><td>${e.timestamp}</td><td>${e.user||'-'}</td><td>${e.model}</td><td>${e.resolution}</td><td>${e.status}</td><td>${fmtUSD(e.cost_usd)}</td><td>${fmtVND(e.cost_vnd)}</td><td>${e.cost_source}</td></tr>`).join("") || `<tr><td colspan="8" class="empty-note">Chưa có log</td></tr>`}</tbody></table>`;
+}
+
+async function downloadCsv(){
+  const log = adminRemoteLog || await getUsageLog();
+  const header = LOG_FIELDS.map(f=>LOG_FIELDS_VN[f]).join(",")+"\n";
+  const rows = log.map(e=> LOG_FIELDS.map(f=> String(e[f]??"").replace(/,/g,";")).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF"+header+rows], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download="billing_log_vi.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+
+/* =========================================================================
+   SIDEBAR WIRING
+========================================================================= */
+document.getElementById("saveKeyBtn").onclick = ()=>{
+  state.apiKey = document.getElementById("apiKeyInput").value.trim();
+  renderSidebarStatus();
+};
+document.getElementById("userNameInput").oninput = (e)=>{ state.userName = e.target.value.trim(); render(); };
+
+document.getElementById("presetCheap").onclick = ()=>{
+  state.model = "gemini-3.1-flash-lite-image"; state.resolution = "512";
+  document.getElementById("modelSelect").value = state.model;
+  document.getElementById("resSelect").value = state.resolution;
+  togglePreset("presetCheap"); render();
+};
+document.getElementById("presetQuality").onclick = ()=>{
+  state.model = "gemini-3.1-flash-image"; state.resolution = "2K";
+  document.getElementById("modelSelect").value = state.model;
+  document.getElementById("resSelect").value = state.resolution;
+  togglePreset("presetQuality"); render();
+};
+function togglePreset(id){
+  document.querySelectorAll(".sb-preset").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+document.getElementById("modelSelect").value = state.model;
+document.getElementById("resSelect").value = state.resolution;
+document.getElementById("modelSelect").onchange = (e)=>{ state.model = e.target.value; document.querySelectorAll(".sb-preset").forEach(p=>p.classList.remove("active")); render(); };
+document.getElementById("resSelect").onchange = (e)=>{ state.resolution = e.target.value; document.querySelectorAll(".sb-preset").forEach(p=>p.classList.remove("active")); render(); };
+
+document.getElementById("formatSelect").onchange = (e)=>{
+  state.exportFormat = e.target.value;
+  document.getElementById("jpgQualityWrap").style.display = state.exportFormat==="JPG" ? "block":"none";
+};
+document.getElementById("jpgQuality").oninput = (e)=>{ state.jpgQuality = +e.target.value; document.getElementById("jpgQualityVal").textContent = e.target.value; };
+document.getElementById("sizeSelect").onchange = (e)=>{
+  state.exportSize = e.target.value;
+  document.getElementById("customSizeWrap").style.display = state.exportSize==="custom" ? "flex":"none";
+};
+document.getElementById("customW").oninput = (e)=>{ state.customW = +e.target.value; };
+document.getElementById("customH").oninput = (e)=>{ state.customH = +e.target.value; };
+
+document.getElementById("adminLoginBtn").onclick = ()=>{
+  const pass = document.getElementById("adminPassInput").value;
+  if(pass === ADMIN_PASSWORD){
+    state.adminLoggedIn = true;
+    document.getElementById("adminLoggedOutView").style.display="none";
+    document.getElementById("adminLoggedInView").style.display="block";
+    document.getElementById("webhookInput").value = state.webhookUrl;
+    document.getElementById("sheetViewInput").value = state.sheetViewUrl;
+    render();
+  } else {
+    alert("Sai mật khẩu.");
+  }
+};
+document.getElementById("adminLogoutBtn").onclick = ()=>{
+  state.adminLoggedIn = false;
+  document.getElementById("adminLoggedOutView").style.display="block";
+  document.getElementById("adminLoggedInView").style.display="none";
+  render();
+};
+document.getElementById("webhookInput").oninput = (e)=>{ state.webhookUrl = e.target.value.trim(); };
+document.getElementById("sheetViewInput").oninput = (e)=>{ state.sheetViewUrl = e.target.value.trim(); if(state.adminLoggedIn) renderAdminSection(); };
+document.getElementById("checkSheetBtn").onclick = async ()=>{
+  const el = document.getElementById("sheetCheckResult");
+  el.textContent = "Đang kiểm tra...";
+  const r = await testRemoteWebhook();
+  el.textContent = (r.ok ? "✅ " : "❌ ") + r.msg;
+};
+
+/* =========================================================================
+   INIT
+========================================================================= */
+render();
+refreshTodayStat();
+</script>
+</body>
+</html>
