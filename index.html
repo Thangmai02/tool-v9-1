@@ -27,14 +27,18 @@
   #sidebar{width:300px;flex:none;background:var(--navy);color:#dfe3f0;padding:18px 16px 40px;}
   #main-col{flex:1;min-width:0;display:flex;flex-direction:column;}
 
-  #topbar{background:#fff;border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
+  #menuToggle{display:none;background:none;border:none;font-size:22px;cursor:pointer;padding:4px 8px;margin-right:8px;color:var(--text);}
+  #sidebarBackdrop{display:none;}
+
+  #topbar{background:#fff;border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;}
   #topbar .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;}
   #topbar .brand .ico{font-size:20px;}
   #topbar .brand .sub{font-size:11.5px;color:var(--muted);font-weight:400;margin-left:6px;}
-  #topbar .today{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;text-align:right;}
+  #topbar .today{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;text-align:right;white-space:nowrap;}
   #topbar .today b{display:block;font-size:16px;color:var(--text);text-transform:none;letter-spacing:0;}
 
   .sb-block{margin-bottom:14px;}
+  #sidebarCloseBtn{background:#2a3157;color:#dfe3f0;border:none;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:14px;cursor:pointer;}
   .sb-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9aa3c4;margin-bottom:8px;}
   .sb-divider{height:1px;background:#2a3157;margin:16px 0;}
   .sb-input{width:100%;background:var(--navy3);border:1px solid #323a63;color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;}
@@ -131,8 +135,23 @@
   .err-row{font-size:12px;padding:6px 0;border-bottom:1px solid var(--line);}
   .err-row b{color:var(--red);}
 
-  .result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:12px;}
-  .result-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line);}
+  .result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px;align-items:start;}
+  .result-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block;}
+  .result-card{background:#fafbfd;border:1px solid var(--line);border-radius:10px;padding:8px;}
+  .result-thumb-wrap{position:relative;}
+  .result-check{position:absolute;left:4px;right:4px;bottom:4px;background:rgba(18,23,43,.72);color:#fff;font-size:10px;border-radius:6px;padding:3px 6px;display:flex;align-items:center;gap:5px;cursor:pointer;}
+  .result-check input{margin:0;cursor:pointer;}
+  .adjust-panel{margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px;}
+  .adjust-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .adjust-row:last-of-type{margin-bottom:0;}
+  .adjust-label{font-size:10.5px;color:var(--muted);width:64px;flex:none;}
+  .adjust-row input[type=range]{flex:1;accent-color:var(--blue);}
+  .adjust-val{font-size:10.5px;color:var(--text);width:34px;flex:none;text-align:right;}
+  .reedit-box{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);}
+  .guide-box{background:#f2f6ff;border:1px solid #d7e2fb;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#33507a;line-height:1.7;}
+  .guide-box b{color:#1c2233;}
+  .guide-box ol{margin:6px 0 0;padding-left:18px;}
+  .guide-box li{margin-bottom:4px;}
 
   .admin-section{margin-top:22px;}
   .admin-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
@@ -147,19 +166,125 @@
   .empty-note{color:var(--muted2);font-size:12.5px;padding:16px 0;text-align:center;}
 
   .link-btn{background:#eef2fb;color:var(--blue);border:1px solid #d7e2fb;border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+  .mode-card{border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;background:#fafbfd;transition:.15s;}
+  .mode-card:hover{border-color:var(--blue);}
+  .mode-card.active{border-color:var(--blue);background:#f2f6ff;box-shadow:0 0 0 2px rgba(47,111,237,.15) inset;}
+  .mode-title{font-weight:700;font-size:13.5px;margin-bottom:4px;}
+  .mode-desc{font-size:11.5px;color:var(--muted);line-height:1.5;}
+
+  .color-slots{display:flex;flex-direction:column;gap:12px;}
+  .color-slot-item{border:1px solid var(--line);border-radius:10px;padding:8px;background:#fafbfd;}
+  .color-mode-toggle{display:flex;gap:6px;margin-bottom:8px;}
+  .cm-btn{flex:1;background:#f0f2f8;border:1px solid var(--line);border-radius:6px;padding:6px 6px;font-size:10.8px;cursor:pointer;color:var(--muted);font-weight:600;}
+  .cm-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .color-slot{display:flex;align-items:center;gap:8px;}
+  .color-swatch-input{width:40px;height:38px;border:1px solid var(--line);border-radius:8px;padding:2px;cursor:pointer;background:#fff;flex:none;}
+  .color-name-input{flex:1;}
+  .color-remove-btn{background:#fdeaea;color:var(--red);border:1px solid #f6c9c9;border-radius:8px;width:34px;height:34px;flex:none;cursor:pointer;font-size:13px;}
+  .color-remove-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .ref-color-uploader{width:40px;height:38px;border:1.5px dashed var(--line);border-radius:8px;flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;overflow:hidden;color:var(--muted2);background:#fff;}
+  .ref-color-uploader.has-file{border-style:solid;border-color:var(--blue);}
+  .ref-color-uploader img{width:100%;height:100%;object-fit:cover;}
+  .preset-swatches{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .swatch-btn{width:28px;height:28px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;flex:none;padding:0;}
+  .swatch-btn:hover{box-shadow:0 0 0 2px var(--blue);}
+
+  /* --- uploader: bấm 1 phát = sẵn sàng dán (Ctrl+V), nhấp đôi = chọn file, kéo thả vẫn hoạt động --- */
+  .uploader,.ref-color-uploader,.chat-attach{outline:none;}
+  .uploader.drag-over,.ref-color-uploader.drag-over,.chat-attach.drag-over{border-color:var(--blue) !important;background:#eaf1ff !important;}
+  .uploader.paste-ready,.ref-color-uploader.paste-ready,.chat-attach.paste-ready{border-color:var(--teal) !important;box-shadow:0 0 0 3px rgba(15,148,136,.15);}
+  .uploader.paste-ready::after,.chat-attach.paste-ready::after{content:'📋 Sẵn sàng dán — nhấn Ctrl+V';display:block;font-size:10.5px;color:var(--teal);font-weight:700;margin-top:4px;}
+  .uploader .hint2{font-size:10.5px;color:var(--muted2);margin-top:2px;}
+
+  /* --- đổi màu theo tham chiếu ảnh: khối riêng, không gộp với chọn màu thủ công --- */
+  .ref-color-grid{display:flex;flex-direction:column;gap:10px;}
+  .ref-color-item{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fafbfd;display:flex;align-items:center;gap:10px;}
+  .ref-color-big-uploader{width:76px;height:76px;border:1.5px dashed #b9c3e0;border-radius:10px;flex:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--muted2);background:#fff;overflow:hidden;text-align:center;line-height:1.3;gap:2px;}
+  .ref-color-big-uploader.has-file{border-style:solid;border-color:var(--blue);}
+  .ref-color-big-uploader img{width:100%;height:100%;object-fit:cover;}
+  .ref-color-big-uploader .icon{font-size:20px;}
+  .ref-color-item .field{flex:1;}
+  .ref-color-item .color-remove-btn{flex:none;}
+
+  /* --- chat với AI: khu soạn thảo kiểu công cụ tạo ảnh --- */
+  .chat-feed{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;max-height:520px;overflow-y:auto;padding-right:2px;}
+  .chat-bubble{border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.55;max-width:100%;}
+  .chat-bubble.user{background:#eef2fb;color:var(--text);align-self:flex-end;margin-left:15%;}
+  .chat-bubble.ai{background:#f5f7fb;border:1px solid var(--line);align-self:flex-start;margin-right:5%;}
+  .chat-pending{font-size:12.5px;color:var(--muted);}
+  .chat-composer{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fafbfd;}
+  .chat-input-row{display:flex;gap:10px;align-items:stretch;}
+  .chat-attach{width:64px;height:64px;flex:none;border:1.5px dashed #b9c3e0;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10.5px;color:var(--muted2);background:#fff;overflow:hidden;position:relative;}
+  .chat-attach.has-file{border-style:solid;border-color:var(--blue);}
+  .chat-attach .icon{font-size:18px;line-height:1;}
+  .chat-attach .thumbs{margin-top:0;gap:2px;}
+  .chat-attach .thumbs img{width:20px;height:20px;}
+  .chat-prompt{flex:1;min-height:64px;margin:0;}
+  .chat-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;}
+  .chip-select{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;}
+  .stepper{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff;font-size:12.5px;font-weight:700;}
+  .stepper button{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:#f0f2f8;cursor:pointer;font-size:14px;line-height:1;color:var(--text);}
+  .stepper button:disabled{opacity:.35;cursor:not-allowed;}
+  .chat-generate-btn{margin-left:auto;padding:9px 18px !important;}
+  .chip-select.model-select{max-width:230px;}
+  .model-note{width:100%;font-size:11.5px;color:#8a8fa3;margin-top:2px;line-height:1.5;}
+  .mode-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:700;color:var(--text);cursor:pointer;}
+  .mode-btn.active{background:var(--accent,#2f6feb);border-color:var(--accent,#2f6feb);color:#fff;}
 
   @media (max-width:820px){
-    #app{flex-direction:column;}
-    #sidebar{width:100%;}
-    .upload-grid,.row{grid-template-columns:1fr;flex-direction:column;}
+    #app{position:relative;overflow-x:hidden;}
+    #menuToggle{display:inline-flex;}
+    #sidebar{
+      position:fixed; top:0; left:0; height:100%; z-index:40;
+      transform:translateX(-105%); transition:transform .25s ease;
+      width:86%; max-width:320px; overflow-y:auto; box-shadow:2px 0 24px rgba(0,0,0,.35);
+    }
+    #sidebar.open{transform:translateX(0);}
+    #sidebarCloseBtn{display:inline-block !important;}
+    #sidebarBackdrop{
+      display:none; position:fixed; inset:0; background:rgba(10,13,25,.55); z-index:30;
+    }
+    #sidebarBackdrop.show{display:block;}
+    #content{padding:16px 14px 60px;}
+    #topbar{padding:12px 14px;}
+    #topbar .brand{font-size:15px;}
+    #topbar .brand .sub{display:none;}
+    #topbar .today{font-size:10px;}
+    #topbar .today b{font-size:14px;}
+    .tabbar{padding:0 14px !important;overflow-x:auto;white-space:nowrap;}
+    .tabbtn{margin-right:14px;font-size:13px;padding:12px 4px;}
+    .card{padding:14px 14px;}
+    .upload-grid,.row,.admin-grid{grid-template-columns:1fr;flex-direction:column;}
+    .stat-row{flex-direction:column;}
+    .summary-badges{flex-direction:column;}
+    .uploader{padding:20px 10px;}
+    .primary-btn,.download-btn,.sb-btn{padding:14px 12px;font-size:15px;}
+    input,select,textarea,button{font-size:16px !important;} /* tránh iOS tự zoom khi focus input */
+    .sb-input,.sb-select{font-size:14px !important;}
+    table.data-table{min-width:520px;}
+    .admin-header{flex-direction:column;align-items:flex-start;}
+    .filter-row{gap:6px;}
+    .filter-btn{padding:8px 12px;}
+    .result-grid{grid-template-columns:repeat(auto-fill,minmax(72px,1fr));}
+    .color-slot{flex-wrap:wrap;}
+    .color-name-input{min-width:140px;}
+    .mode-card{padding:12px;}
+    .ref-color-item{flex-wrap:wrap;}
+    .chat-input-row{flex-wrap:wrap;}
+    .chat-attach{width:100%;height:52px;flex-direction:row;}
+    .chat-generate-btn{margin-left:0;width:100%;}
   }
 </style>
 </head>
+
 <body>
 <div id="app">
 
   <!-- ============ SIDEBAR ============ -->
   <div id="sidebar">
+    <button id="sidebarCloseBtn" style="display:none;">✕ Đóng</button>
     <div class="sb-block">
       <div class="sb-title">🔑 API Key</div>
       <input class="sb-input" id="apiKeyInput" type="password" placeholder="Dán Gemini API Key...">
@@ -256,11 +381,15 @@
   <!-- ============ MAIN ============ -->
   <div id="main-col">
     <div id="topbar">
-      <div class="brand"><span class="ico">🪄</span> Photo Swap Studio <span class="sub">Thay trang phục &amp; in hoạ tiết hàng loạt bằng AI</span></div>
+      <div style="display:flex;align-items:center;min-width:0;">
+        <button id="menuToggle" aria-label="Mở menu">☰</button>
+        <div class="brand"><span class="ico">🪄</span> Photo Swap Studio <span class="sub">Thay trang phục &amp; đổi màu trang phục hàng loạt bằng AI</span></div>
+      </div>
       <div class="today">Hôm nay<b id="todayStat">$0.00 (0 ảnh)</b></div>
     </div>
     <div id="content"></div>
   </div>
+  <div id="sidebarBackdrop"></div>
 </div>
 
 <script>
@@ -268,11 +397,30 @@
    CONFIG — mirrors app_web.py
 ========================================================================= */
 const MODEL_OPTIONS_LABEL = {
-  "gemini-3.1-flash-image":"Nano Banana 2 — Khuyến nghị",
-  "gemini-3.1-flash-lite-image":"Nano Banana 2 Lite — Nhanh & rẻ nhất",
-  "gemini-3-pro-image":"Nano Banana Pro — Chất lượng cao nhất",
-  "gemini-2.5-flash-image":"Nano Banana gốc (2.5)"
+  // ── Model tạo ảnh (native image generation) — hiện tất cả đều TRẢ PHÍ, không có free tier ──
+  "gemini-3.1-flash-image":"Nano Banana 2 — Khuyến nghị (Trả phí)",
+  "gemini-3.1-flash-lite-image":"Nano Banana 2 Lite — Nhanh & rẻ nhất (Trả phí)",
+  "gemini-3-pro-image":"Nano Banana Pro — Chất lượng cao nhất (Trả phí)",
+  "gemini-2.5-flash-image":"Nano Banana gốc 2.5 (Trả phí)",
+  // ── Model chat/văn bản (hỗ trợ trò chuyện, KHÔNG tạo ảnh) — có bản Free giới hạn lượt/ngày ──
+  "gemini-3.5-flash":"Gemini 3.5 Flash — mới & mạnh nhất (Free giới hạn)",
+  "gemini-3.1-pro-preview":"Gemini 3.1 Pro Preview — suy luận sâu nhất (Trả phí, không có Free)",
+  "gemini-3-flash-preview":"Gemini 3 Flash Preview (Free giới hạn)",
+  "gemini-3.1-flash-lite":"Gemini 3.1 Flash-Lite — rẻ nhất dòng 3.x (Free giới hạn)",
+  "gemini-2.5-pro":"Gemini 2.5 Pro (Free giới hạn)",
+  "gemini-2.5-flash":"Gemini 2.5 Flash (Free giới hạn)",
+  "gemini-2.5-flash-lite":"Gemini 2.5 Flash-Lite — nhỏ gọn nhất (Free giới hạn)"
 };
+// Model nào có khả năng SINH ẢNH thật sự (dùng cho ô chat tạo ảnh). Các model chat/văn bản
+// bên dưới chỉ trả lời bằng chữ, không kèm ảnh — vẫn cho chọn để chat nhưng sẽ không có ảnh trả về.
+const IMAGE_CAPABLE_MODELS = new Set([
+  "gemini-3.1-flash-image","gemini-3.1-flash-lite-image","gemini-3-pro-image","gemini-2.5-flash-image"
+]);
+// Model có gói Free (miễn phí, giới hạn lượt/ngày, dữ liệu có thể được Google dùng để cải thiện sản phẩm)
+const FREE_TIER_MODELS = new Set([
+  "gemini-3.5-flash","gemini-3-flash-preview","gemini-3.1-flash-lite",
+  "gemini-2.5-pro","gemini-2.5-flash","gemini-2.5-flash-lite"
+]);
 const RES_LABEL = {
   "auto":"Tự động (mặc định)", "512":"512px — Tiết kiệm", "1K":"1K (~1024px)",
   "2K":"2K (~2048px) — Khuyến nghị", "4K":"4K (~4096px)"
@@ -289,7 +437,15 @@ const MODEL_TOKEN_PRICING = {
   "gemini-3.1-flash-image":       {input_per_1m:0.50, output_text_per_1m:3.00,  output_image_per_1m:60.00},
   "gemini-3.1-flash-lite-image":  {input_per_1m:0.25, output_text_per_1m:1.50,  output_image_per_1m:30.00},
   "gemini-3-pro-image":           {input_per_1m:2.00, output_text_per_1m:12.00, output_image_per_1m:120.00},
-  "gemini-2.5-flash-image":       {input_per_1m:0.30, output_text_per_1m:2.50,  output_image_per_1m:30.00}
+  "gemini-2.5-flash-image":       {input_per_1m:0.30, output_text_per_1m:2.50,  output_image_per_1m:30.00},
+  // Model chat/văn bản — không sinh ảnh nên output_image_per_1m = 0
+  "gemini-3.5-flash":             {input_per_1m:1.50, output_text_per_1m:9.00,  output_image_per_1m:0},
+  "gemini-3.1-pro-preview":       {input_per_1m:2.00, output_text_per_1m:12.00, output_image_per_1m:0},
+  "gemini-3-flash-preview":       {input_per_1m:0.50, output_text_per_1m:3.00,  output_image_per_1m:0},
+  "gemini-3.1-flash-lite":        {input_per_1m:0.25, output_text_per_1m:1.50,  output_image_per_1m:0},
+  "gemini-2.5-pro":               {input_per_1m:1.25, output_text_per_1m:10.00, output_image_per_1m:0},
+  "gemini-2.5-flash":             {input_per_1m:0.30, output_text_per_1m:2.50,  output_image_per_1m:0},
+  "gemini-2.5-flash-lite":        {input_per_1m:0.10, output_text_per_1m:0.40,  output_image_per_1m:0}
 };
 const MAX_RETRIES = 4;
 const RETRY_BASE_DELAY_MS = 5000;
@@ -305,28 +461,29 @@ const SIZE_PRESETS = {
   "custom": "custom"
 };
 
-const PATTERN_POSITIONS = {
-  "Giữa ngực": "chính giữa ngực áo",
-  "Ngực trái (như logo thương hiệu)": "ngực trái áo, kích thước nhỏ như vị trí logo thương hiệu",
-  "Ngực phải": "ngực phải áo",
-  "Toàn thân áo (in full)": "phủ toàn bộ mặt trước áo",
-  "Tay áo": "phần tay áo",
-  "Lưng áo": "chính giữa lưng áo"
-};
-const PATTERN_SIZES = {
-  "Nhỏ (như logo)": "kích thước nhỏ, khoảng 8-10cm",
-  "Vừa": "kích thước vừa phải, cân đối với ngực áo",
-  "Lớn (chiếm phần lớn áo)": "kích thước lớn, chiếm phần lớn diện tích áo"
-};
+const COLOR_PRESETS = [
+  {hex:"#c0392b", name:"Đỏ đô"},
+  {hex:"#1b2a4a", name:"Xanh navy"},
+  {hex:"#111111", name:"Đen"},
+  {hex:"#f5f5f0", name:"Trắng ngà"},
+  {hex:"#8a6d3b", name:"Nâu đất"},
+  {hex:"#f7c6d9", name:"Hồng pastel"},
+  {hex:"#4a5d4f", name:"Xanh rêu"},
+  {hex:"#d4af37", name:"Vàng gold"},
+  {hex:"#6b7280", name:"Xám"},
+  {hex:"#2e7d5b", name:"Xanh lá đậm"},
+  {hex:"#5b3a8e", name:"Tím"},
+  {hex:"#e8823c", name:"Cam đất"}
+];
 
 const DEFAULT_PROMPT_1 = "Thay áo trong ảnh thứ 2 vào người ở ảnh thứ 1, giữ nguyên dáng người, khuôn mặt và nền.";
 const DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwU8EfOeV_tmh7y-7jD85gjKJP_4vpxUI3pdyo8whzxBzc3Gx6ez77CwUijDex-PLoaMw/exec";
-const ADMIN_PASSWORD = "12345";
+const ADMIN_PASSWORD = "doimatkhaunay123";
 
 const LOG_FIELDS = ["timestamp","user","model","resolution","format","ref_image","status","prompt_tokens","output_tokens","cost_usd","cost_vnd","cost_source"];
 const LOG_FIELDS_VN = {
   timestamp:"Thời gian", user:"Người dùng", model:"Model", resolution:"Độ phân giải", format:"Định dạng",
-  ref_image:"Ảnh/Hoạ tiết", status:"Trạng thái", prompt_tokens:"Token đầu vào", output_tokens:"Token đầu ra",
+  ref_image:"Ảnh / Nội dung xử lý", status:"Trạng thái", prompt_tokens:"Token đầu vào", output_tokens:"Token đầu ra",
   cost_usd:"Chi phí (USD)", cost_vnd:"Chi phí (VNĐ)", cost_source:"Nguồn tính giá"
 };
 const NON_BILLABLE_STATUSES = new Set(["error"]);
@@ -343,18 +500,95 @@ const state = {
   activeTab:1,
   tab1:{source:null, refs:[], prompt:DEFAULT_PROMPT_1, running:false, stopRequested:false,
         idx:0, total:0, startTime:0, log:[], results:[], errors:[], usedNames:new Set(), hasRun:false, stoppedEarly:false},
-  tab2:{source:null, refs:[], position:Object.keys(PATTERN_POSITIONS)[0], size:Object.keys(PATTERN_SIZES)[1], prompt:"", running:false, stopRequested:false,
-        idx:0, total:0, startTime:0, log:[], results:[], errors:[], usedNames:new Set(), hasRun:false, stoppedEarly:false}
+  tab2:{sources:[],
+        colors:[{id:1,mode:"pick",hex:"#c0392b",name:"Đỏ đô"},{id:2,mode:"pick",hex:"#1b2a4a",name:"Xanh navy"},{id:3,mode:"pick",hex:"#111111",name:"Đen"}],
+        nextColorId:4, aiExtra:"", running:false, stopRequested:false,
+        idx:0, total:0, startTime:0, log:[], results:[], errors:[], usedNames:new Set(), hasRun:false, stoppedEarly:false, startError:null,
+        reEditPrompt:"", reEditRunning:false},
+  tab3:{products:[], patterns:[], placement:"full", areaText:"", intensity:75, extra:"",
+        running:false, stopRequested:false,
+        idx:0, total:0, startTime:0, log:[], results:[], errors:[], usedNames:new Set(), hasRun:false, stoppedEarly:false, startError:null,
+        reEditPrompt:"", reEditRunning:false},
+  tab4:{refs:[], prompt:"", model:"gemini-3-pro-image", aspect:"1:1", count:1, resolution:"1K", mode:"image",
+        items:[], results:[], usedNames:new Set(), running:false, startError:null}
 };
-state.tab2.prompt = buildTab2Prompt(state.tab2.position, state.tab2.size);
-function buildTab2Prompt(pos, size){
-  return `In hoạ tiết ở ảnh thứ 2 lên ${PATTERN_POSITIONS[pos]} của người trong ảnh thứ 1, ${PATTERN_SIZES[size]}. Giữ nguyên dáng người, khuôn mặt, form áo, nếp gấp vải, ánh sáng và bóng đổ — hoạ tiết in tự nhiên như thật, bám theo bề mặt vải.`;
+function buildColorPrompt(color, extra){
+  return `Đổi màu trang phục trong ảnh sang màu "${color.name}" (mã màu tham khảo ${color.hex}). Giữ nguyên toàn bộ kiểu dáng, chất liệu vải, form áo/quần, nếp gấp, bóng đổ, ánh sáng, nền và người mẫu — chỉ thay đổi màu sắc của trang phục, không thay đổi gì khác.${extra?(" "+extra):""}`;
+}
+/* Đổi màu theo tham chiếu ảnh: ảnh 1 = trang phục cần đổi màu, ảnh 2 = ảnh mẫu
+   chứa màu cần lấy. AI cần đọc đúng màu chủ đạo của ảnh mẫu rồi áp lên trang phục. */
+function buildColorRefPrompt(extra){
+  return `Ảnh thứ 2 là ảnh tham chiếu màu. Hãy quan sát và lấy chính xác màu sắc chủ đạo trong ảnh tham chiếu đó (đúng tông màu, đúng sắc độ đậm nhạt, đúng độ bão hoà) rồi áp dụng màu đó cho trang phục trong ảnh thứ 1, làm cho màu trang phục giống hệt màu tham chiếu. Giữ nguyên toàn bộ kiểu dáng, chất liệu vải, form áo/quần, nếp gấp, bóng đổ, ánh sáng, nền và người mẫu trong ảnh thứ 1 — chỉ thay đổi màu sắc của trang phục, không thay đổi gì khác.${extra?(" "+extra):""}`;
+}
+
+/* Ghép hoạ tiết: ảnh 1 = sản phẩm thời trang, ảnh 2 = hoạ tiết/pattern cần ghép.
+   Kết quả cần trông như hoạ tiết được in/dệt/thêu thật lên vải, bám theo đúng
+   form dáng, nếp gấp, độ cong và ánh sáng của sản phẩm — không phải dán đè phẳng. */
+function buildPatternPrompt(t){
+  const analysisText = `Trước tiên, hãy quan sát và phân tích kỹ ảnh thứ 1 (sản phẩm gốc): xác định đây là loại trang phục gì (áo, quần, váy, túi, khăn...), kiểu dáng/phom form, đường cắt may, chất liệu vải và phong cách tổng thể (basic, thanh lịch, thể thao, cá tính...). Đồng thời quan sát kỹ ảnh thứ 2 (hoạ tiết): xác định loại hoạ tiết, mật độ, kích thước, hướng lặp và tông màu chủ đạo. Dựa trên những phân tích đó, hãy ghép hoạ tiết vào sản phẩm sao cho phù hợp nhất với form dáng và hơi hướng phong cách của sản phẩm gốc.`;
+
+  let placementText;
+  if(t.placement==="area" && t.areaText && t.areaText.trim()){
+    placementText = `Chỉ áp dụng hoạ tiết lên đúng vùng sau của sản phẩm: "${t.areaText.trim()}". Các phần còn lại của sản phẩm giữ nguyên như ảnh gốc, không ghép hoạ tiết ra ngoài vùng này.`;
+  } else if(t.placement==="auto"){
+    placementText = `Không có vùng chỉ định cụ thể — hãy tự quyết định vị trí và cách áp dụng hoạ tiết phù hợp nhất (phủ toàn bộ, phủ một phần, hay chỉ nhấn nhá ở một vài chi tiết như viền cổ, túi, ống tay...) dựa trên form dáng, kiểu cắt may và phong cách của sản phẩm, sao cho kết quả trông tự nhiên, hài hoà và có tính ứng dụng cao nhất — giống như một nhà thiết kế thời trang thực thụ đang lựa chọn cách phối hoạ tiết cho sản phẩm đó.`;
+  } else {
+    placementText = `Phủ hoạ tiết lên toàn bộ bề mặt vải của sản phẩm, lặp lại hoạ tiết (tiled) một cách tự nhiên và cân đối theo đúng form dáng của sản phẩm.`;
+  }
+  const lvl = t.intensity;
+  const intensityText = lvl>=85 ? "hoạ tiết cần rõ nét, lên màu đậm và nổi bật"
+                       : lvl>=55 ? "hoạ tiết rõ ràng, cân bằng, hài hoà với tổng thể sản phẩm"
+                       : lvl>=25 ? "hoạ tiết mờ nhẹ, tinh tế, mang tính gợi ý nhiều hơn là nổi bật"
+                       : "hoạ tiết rất mờ, chỉ thấp thoáng như một lớp kết cấu vải tinh tế";
+  return `${analysisText} Ghép hoạ tiết trong ảnh thứ 2 lên sản phẩm thời trang trong ảnh thứ 1. ${placementText} Mức độ thể hiện hoạ tiết: ${intensityText}. Hoạ tiết phải bám sát đúng ánh sáng, bóng đổ, độ cong bề mặt và nếp gấp của vải trên sản phẩm gốc để trông chân thực như được in, dệt hoặc thêu trực tiếp lên vải — tuyệt đối không dán đè phẳng như sticker/đề can. Giữ nguyên toàn bộ kiểu dáng, form, đường may, form dáng, nền và người mẫu (nếu có) trong ảnh thứ 1 — không thay đổi gì khác ngoài hoạ tiết bề mặt vải.${t.extra?(" "+t.extra.trim()):""}`;
 }
 
 /* =========================================================================
    HELPERS
 ========================================================================= */
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+/* Gắn hành vi cho MỌI ô tải ảnh trong app:
+   - bấm 1 phát: focus ô đó và bật sẵn sàng dán ảnh từ clipboard (Ctrl+V / Cmd+V)
+   - nhấp đôi: mở hộp thoại chọn file trong máy (folder)
+   - kéo thả file ảnh vào ô: vẫn hoạt động như cũ */
+function wireUploader(upEl, inEl, handleFiles){
+  if(!upEl) return;
+  upEl.setAttribute("tabindex","0");
+  let clickTimer = null;
+  upEl.addEventListener("click", ()=>{
+    if(clickTimer){ return; } // đang chờ xác định có phải dblclick không
+    clickTimer = setTimeout(()=>{
+      clickTimer = null;
+      upEl.focus({preventScroll:true});
+      upEl.classList.add("paste-ready");
+      clearTimeout(upEl._pasteReadyTimer);
+      upEl._pasteReadyTimer = setTimeout(()=> upEl.classList.remove("paste-ready"), 2200);
+    }, 230);
+  });
+  upEl.addEventListener("dblclick", (ev)=>{
+    ev.preventDefault();
+    if(clickTimer){ clearTimeout(clickTimer); clickTimer = null; }
+    upEl.classList.remove("paste-ready");
+    if(inEl) inEl.click();
+  });
+  upEl.addEventListener("paste", (ev)=>{
+    const items = Array.from((ev.clipboardData && ev.clipboardData.items) || []);
+    const files = items.filter(it=> it.kind==="file" && it.type && it.type.startsWith("image/"))
+                        .map(it=> it.getAsFile()).filter(Boolean);
+    if(files.length){ ev.preventDefault(); upEl.classList.remove("paste-ready"); handleFiles(files); }
+  });
+  upEl.addEventListener("dragover", (ev)=>{ ev.preventDefault(); upEl.classList.add("drag-over"); });
+  upEl.addEventListener("dragleave", ()=> upEl.classList.remove("drag-over"));
+  upEl.addEventListener("drop", (ev)=>{
+    ev.preventDefault();
+    upEl.classList.remove("drag-over");
+    const files = Array.from((ev.dataTransfer && ev.dataTransfer.files) || []).filter(f=> f.type && f.type.startsWith("image/"));
+    if(files.length) handleFiles(files);
+  });
+}
+function escapeHtml(str){
+  return String(str||"").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
 function fileToBase64(file){
   return new Promise((res,rej)=>{
     const r = new FileReader();
@@ -384,6 +618,42 @@ function getUniqueName(baseName, ext, usedNames){
   return candidate;
 }
 function stemName(filename){ return filename.replace(/\.[^/.]+$/, ""); }
+function slugify(str){
+  return (str||"mau").toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/đ/gi,'d').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase() || "mau";
+}
+
+/* =========================================================================
+   HẬU KỲ ẢNH KẾT QUẢ — chỉnh sáng/tối, tông màu, độ bão hoà bằng canvas
+   (dùng CSS filter để preview tức thì, rồi "bake" vào pixel thật khi tải về
+   hoặc khi gửi lại cho AI chỉnh sửa tiếp).
+========================================================================= */
+function cssFilterFor(adjust){
+  const a = adjust || {bri:100, sat:100, hue:0};
+  return `brightness(${a.bri}%) saturate(${a.sat}%) hue-rotate(${a.hue}deg)`;
+}
+function bakeAdjustedBlob(url, adjust){
+  const a = adjust || {bri:100, sat:100, hue:0};
+  const isDefault = a.bri===100 && a.sat===100 && a.hue===0;
+  return new Promise((resolve,reject)=>{
+    if(isDefault){ fetch(url).then(r=>r.blob()).then(resolve).catch(reject); return; }
+    const img = new Image();
+    img.onload = ()=>{
+      try{
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.filter = cssFilterFor(a);
+        ctx.drawImage(img,0,0);
+        canvas.toBlob(b=> b?resolve(b):reject(new Error("Không tạo được ảnh sau khi chỉnh sắc độ")), "image/png");
+      }catch(e){ reject(e); }
+    };
+    img.onerror = ()=> reject(new Error("Không tải được ảnh để chỉnh sắc độ"));
+    img.src = url;
+  });
+}
+
+
 function estimatePreRunCost(count){
   const tier = state.resolution==="auto" ? "1K" : state.resolution;
   const unit = (PRICE_TABLE[state.model] && PRICE_TABLE[state.model][tier]) || 0.05;
@@ -584,6 +854,83 @@ function extractImagePart(response){
   }
   return null;
 }
+/* Gộp toàn bộ phần chữ trong response lại thành 1 đoạn văn bản (dùng cho chế độ Trò chuyện) */
+function extractTextPart(response){
+  const cand = response && response.candidates && response.candidates[0];
+  const partsOut = (cand && cand.content && cand.content.parts) || [];
+  const texts = partsOut.map(p=> p.text).filter(t=> typeof t === "string" && t.length);
+  if(texts.length) return texts.join("\n\n");
+  // Một số model preview khi bị chặn/không có nội dung sẽ trả finishReason thay vì parts
+  const finishReason = cand && cand.finishReason;
+  if(finishReason && finishReason !== "STOP") return null;
+  return null;
+}
+
+/* Biến thể 1-ảnh cho chế độ AI của tab Đổi màu trang phục (không cần ảnh thứ 2) */
+async function callGeminiSingleOnce(promptText, srcB64, srcMime){
+  const parts = [{text: promptText}, {inlineData:{mimeType:srcMime, data:srcB64}}];
+  const generationConfig = { responseModalities: ["TEXT","IMAGE"] };
+  if(state.resolution !== "auto"){ generationConfig.imageConfig = { imageSize: state.resolution }; }
+  const body = { contents: [{ parts }], generationConfig };
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${state.model}:generateContent?key=${encodeURIComponent(state.apiKey)}`;
+  const resp = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+  if(!resp.ok){
+    const errText = await resp.text().catch(()=> "");
+    throw new Error(`API lỗi ${resp.status}: ${errText.slice(0,200)}`);
+  }
+  return await resp.json();
+}
+async function callGeminiSingleWithRetry(promptText, srcB64, srcMime, onRetryLog){
+  let lastErr;
+  for(let attempt=1; attempt<=MAX_RETRIES; attempt++){
+    try{ return await callGeminiSingleOnce(promptText, srcB64, srcMime); }
+    catch(e){
+      lastErr = e;
+      if(attempt===MAX_RETRIES) throw e;
+      onRetryLog(`⏳ thử lại lần ${attempt}/${MAX_RETRIES}...`);
+      await sleep(RETRY_BASE_DELAY_MS * Math.pow(2, attempt-1));
+    }
+  }
+  throw lastErr;
+}
+
+/* Biến thể cho tab Chat với AI: 0..N ảnh đính kèm (tuỳ chọn) + prompt tự do,
+   dùng model/độ phân giải/tỉ lệ khung hình chọn riêng trong ô chat (không phụ thuộc thanh bên). */
+async function callGeminiChatOnce(promptText, refFiles, modelId, resolution, aspect, mode){
+  const parts = [{text: promptText}];
+  for(const f of (refFiles||[])){
+    const b64 = await fileToBase64(f);
+    parts.push({inlineData:{mimeType: f.type || "image/png", data:b64}});
+  }
+  const generationConfig = mode==="chat" ? { responseModalities: ["TEXT"] } : { responseModalities: ["TEXT","IMAGE"] };
+  if(mode!=="chat"){
+    const imageConfig = {};
+    if(resolution && resolution!=="auto") imageConfig.imageSize = resolution;
+    if(aspect && aspect!=="auto") imageConfig.aspectRatio = aspect;
+    if(Object.keys(imageConfig).length) generationConfig.imageConfig = imageConfig;
+  }
+  const body = { contents: [{ parts }], generationConfig };
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${encodeURIComponent(state.apiKey)}`;
+  const resp = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+  if(!resp.ok){
+    const errText = await resp.text().catch(()=> "");
+    throw new Error(`API lỗi ${resp.status}: ${errText.slice(0,200)}`);
+  }
+  return await resp.json();
+}
+async function callGeminiChatWithRetry(promptText, refFiles, modelId, resolution, aspect, mode, onRetryLog){
+  let lastErr;
+  for(let attempt=1; attempt<=MAX_RETRIES; attempt++){
+    try{ return await callGeminiChatOnce(promptText, refFiles, modelId, resolution, aspect, mode); }
+    catch(e){
+      lastErr = e;
+      if(attempt===MAX_RETRIES) throw e;
+      onRetryLog(`⏳ thử lại lần ${attempt}/${MAX_RETRIES}...`);
+      await sleep(RETRY_BASE_DELAY_MS * Math.pow(2, attempt-1));
+    }
+  }
+  throw lastErr;
+}
 
 /* =========================================================================
    PROCESSING (batch) — mirrors the per-image loop in app_web.py
@@ -673,15 +1020,404 @@ async function processBatch(tabKey){
   if(state.adminLoggedIn) renderAdminTables();
 }
 
+async function processColorBatch(){
+  const t = state.tab2;
+  const missing = [];
+  if(!t.sources.length) missing.push("ảnh trang phục (áo/quần/chân váy/set đồ)");
+  if(!t.colors.length) missing.push("ít nhất 1 màu muốn đổi");
+  const missingRefs = t.colors.filter(c=>c.mode==="ref" && !c.refFile);
+  if(missingRefs.length) missing.push(`ảnh tham chiếu màu cho ${missingRefs.length} ô đang chọn "Tham chiếu ảnh"`);
+  if(!state.apiKey) missing.push("API Key (nhập ở thanh bên trái rồi bấm 'Lưu key')");
+  if(missing.length){ t.startError = "❌ Chưa thể bắt đầu, còn thiếu: "+missing.join(", "); render(); return; }
+  t.startError = null;
+
+  t.running=true; t.stopRequested=false; t.hasRun=false; t.stoppedEarly=false;
+  t.idx=0; t.total = t.sources.length*t.colors.length; t.startTime=Date.now();
+  t.log=[]; t.results=[]; t.errors=[]; t.usedNames=new Set();
+  render();
+
+  const modelLabel = MODEL_OPTIONS_LABEL[state.model];
+  const resLabel = RES_LABEL[state.resolution];
+
+  outer:
+  for(let si=0; si<t.sources.length; si++){
+    const src = t.sources[si];
+    const srcB64 = await fileToBase64(src.file);
+    const srcMime = src.file.type||"image/png";
+
+    for(let ci=0; ci<t.colors.length; ci++){
+      if(t.stopRequested){ t.stoppedEarly=true; break outer; }
+      const color = t.colors[ci];
+      const colorLabel = color.name || (color.mode==="ref" ? "Theo ảnh mẫu" : "Màu mới");
+      t.log.push(`🔄 (${t.idx+1}/${t.total}) ${src.file.name} → ${colorLabel}`);
+      render();
+
+      let logStatus, usageResult=null, response=null, resultBlob=null;
+      try{
+        if(color.mode==="ref"){
+          const refB64 = await fileToBase64(color.refFile);
+          const refMime = color.refFile.type || "image/png";
+          const prompt = buildColorRefPrompt(t.aiExtra);
+          response = await callGeminiWithRetry(prompt, srcB64, srcMime, refB64, refMime, (msg)=>{ t.log.push(`${src.file.name}: ${msg}`); render(); });
+        } else {
+          const prompt = buildColorPrompt(color, t.aiExtra);
+          response = await callGeminiSingleWithRetry(prompt, srcB64, srcMime, (msg)=>{ t.log.push(`${src.file.name}: ${msg}`); render(); });
+        }
+        const imgPart = extractImagePart(response);
+        if(imgPart){ resultBlob = b64ToBlob(imgPart.data, imgPart.mime); logStatus="success"; }
+        else { logStatus="no_image"; t.errors.push({name:`${src.file.name} → ${colorLabel}`, reason:"Không nhận được ảnh kết quả từ model"}); t.log.push(`⚠️ Không có ảnh: ${src.file.name} → ${colorLabel}`); }
+        usageResult = computeCostFromUsage(state.model, response && response.usageMetadata);
+      }catch(err){
+        t.log.push(`❌ Lỗi ${src.file.name} → ${colorLabel}: ${err.message}`);
+        t.errors.push({name:`${src.file.name} → ${colorLabel}`, reason: err.message});
+        logStatus = "error";
+      }
+
+      if(resultBlob){
+        resultBlob = await finalizeImage(resultBlob);
+        const ext = state.exportFormat==="PNG" ? ".png" : ".jpg";
+        const baseName = stemName(src.file.name)+"-"+slugify(colorLabel);
+        const uniqueName = getUniqueName(baseName, ext, t.usedNames);
+        const url = URL.createObjectURL(resultBlob);
+        t.results.push({name:uniqueName, url, blob:resultBlob, sourceName:src.file.name, colorName:colorLabel,
+                         adjust:{bri:100,sat:100,hue:0}, selected:false, editOpen:false});
+        t.log.push(`✅ Xong: ${src.file.name} → ${colorLabel}`);
+      }
+
+      let costUsd, pTokens, oTokens, costSource;
+      if(usageResult){
+        costUsd=usageResult.costUsd; pTokens=usageResult.promptTokens; oTokens=usageResult.outputTokens; costSource="token thật";
+      } else {
+        const tier = state.resolution==="auto" ? "1K" : state.resolution;
+        costUsd = (PRICE_TABLE[state.model] && PRICE_TABLE[state.model][tier]) || 0.05;
+        pTokens=""; oTokens=""; costSource="ước tính (không lấy được token thật)";
+      }
+      if(NON_BILLABLE_STATUSES.has(logStatus)){ costUsd=0; costSource="không tính phí (lỗi)"; }
+
+      const row = {
+        timestamp: nowStr(), user: state.userName || "Không rõ",
+        model: modelLabel, resolution: resLabel,
+        format: state.exportFormat, ref_image: `${src.file.name} → ${colorLabel}`, status: logStatus,
+        prompt_tokens: pTokens, output_tokens: oTokens,
+        cost_usd: Math.round(costUsd*10000)/10000, cost_vnd: Math.round(costUsd*USD_TO_VND), cost_source: costSource
+      };
+      await appendUsageRow(row);
+      sendRemoteLog(row);
+
+      t.idx++;
+      render();
+    }
+  }
+
+  t.running=false; t.hasRun=true;
+  render();
+  refreshTodayStat();
+  if(state.adminLoggedIn) renderAdminTables();
+}
+
+async function processPatternBatch(){
+  const t = state.tab3;
+  const missing = [];
+  if(!t.products.length) missing.push("ảnh sản phẩm thời trang");
+  if(!t.patterns.length) missing.push("ảnh hoạ tiết cần ghép");
+  if(t.placement==="area" && !t.areaText.trim()) missing.push('mô tả vùng cần ghép hoạ tiết (hoặc chuyển sang "Phủ toàn bộ")');
+  if(!state.apiKey) missing.push("API Key (nhập ở thanh bên trái rồi bấm 'Lưu key')");
+  if(missing.length){ t.startError = "❌ Chưa thể bắt đầu, còn thiếu: "+missing.join(", "); render(); return; }
+  t.startError = null;
+
+  t.running=true; t.stopRequested=false; t.hasRun=false; t.stoppedEarly=false;
+  t.idx=0; t.total = t.products.length*t.patterns.length; t.startTime=Date.now();
+  t.log=[]; t.results=[]; t.errors=[]; t.usedNames=new Set();
+  render();
+
+  const modelLabel = MODEL_OPTIONS_LABEL[state.model];
+  const resLabel = RES_LABEL[state.resolution];
+  const prompt = buildPatternPrompt(t);
+
+  outer:
+  for(let pi=0; pi<t.products.length; pi++){
+    const prod = t.products[pi];
+    const srcB64 = await fileToBase64(prod.file);
+    const srcMime = prod.file.type||"image/png";
+
+    for(let ti=0; ti<t.patterns.length; ti++){
+      if(t.stopRequested){ t.stoppedEarly=true; break outer; }
+      const pat = t.patterns[ti];
+      t.log.push(`🔄 (${t.idx+1}/${t.total}) ${prod.file.name} → hoạ tiết: ${pat.file.name}`);
+      render();
+
+      let logStatus, usageResult=null, response=null, resultBlob=null;
+      try{
+        const patB64 = await fileToBase64(pat.file);
+        const patMime = pat.file.type||"image/png";
+        response = await callGeminiWithRetry(prompt, srcB64, srcMime, patB64, patMime, (msg)=>{ t.log.push(`${prod.file.name}: ${msg}`); render(); });
+        const imgPart = extractImagePart(response);
+        if(imgPart){ resultBlob = b64ToBlob(imgPart.data, imgPart.mime); logStatus="success"; }
+        else { logStatus="no_image"; t.errors.push({name:`${prod.file.name} → ${pat.file.name}`, reason:"Không nhận được ảnh kết quả từ model"}); t.log.push(`⚠️ Không có ảnh: ${prod.file.name} → ${pat.file.name}`); }
+        usageResult = computeCostFromUsage(state.model, response && response.usageMetadata);
+      }catch(err){
+        t.log.push(`❌ Lỗi ${prod.file.name} → ${pat.file.name}: ${err.message}`);
+        t.errors.push({name:`${prod.file.name} → ${pat.file.name}`, reason: err.message});
+        logStatus = "error";
+      }
+
+      if(resultBlob){
+        resultBlob = await finalizeImage(resultBlob);
+        const ext = state.exportFormat==="PNG" ? ".png" : ".jpg";
+        const baseName = stemName(prod.file.name)+"-"+slugify(stemName(pat.file.name));
+        const uniqueName = getUniqueName(baseName, ext, t.usedNames);
+        const url = URL.createObjectURL(resultBlob);
+        t.results.push({name:uniqueName, url, blob:resultBlob, sourceName:prod.file.name, colorName:stemName(pat.file.name),
+                         adjust:{bri:100,sat:100,hue:0}, selected:false, editOpen:false});
+        t.log.push(`✅ Xong: ${prod.file.name} → ${pat.file.name}`);
+      }
+
+      let costUsd, pTokens, oTokens, costSource;
+      if(usageResult){
+        costUsd=usageResult.costUsd; pTokens=usageResult.promptTokens; oTokens=usageResult.outputTokens; costSource="token thật";
+      } else {
+        const tier = state.resolution==="auto" ? "1K" : state.resolution;
+        costUsd = (PRICE_TABLE[state.model] && PRICE_TABLE[state.model][tier]) || 0.05;
+        pTokens=""; oTokens=""; costSource="ước tính (không lấy được token thật)";
+      }
+      if(NON_BILLABLE_STATUSES.has(logStatus)){ costUsd=0; costSource="không tính phí (lỗi)"; }
+
+      const row = {
+        timestamp: nowStr(), user: state.userName || "Không rõ",
+        model: modelLabel, resolution: resLabel,
+        format: state.exportFormat, ref_image: `${prod.file.name} → hoạ tiết ${pat.file.name}`, status: logStatus,
+        prompt_tokens: pTokens, output_tokens: oTokens,
+        cost_usd: Math.round(costUsd*10000)/10000, cost_vnd: Math.round(costUsd*USD_TO_VND), cost_source: costSource
+      };
+      await appendUsageRow(row);
+      sendRemoteLog(row);
+
+      t.idx++;
+      render();
+    }
+  }
+
+  t.running=false; t.hasRun=true;
+  render();
+  refreshTodayStat();
+  if(state.adminLoggedIn) renderAdminTables();
+}
+
+/* =========================================================================
+   XỬ LÝ: TAB 4 — CHAT VỚI AI (tạo ảnh từ mô tả, có thể kèm ảnh tham chiếu)
+========================================================================= */
+async function processChatGenerate(){
+  const t = state.tab4;
+  const promptText = (t.prompt||"").trim();
+  if(!promptText){ t.startError = "❌ Vui lòng nhập tin nhắn / mô tả."; render(); return; }
+  if(!state.apiKey){ t.startError = "❌ Cần API Key để dùng chat (nhập ở thanh bên trái rồi bấm 'Lưu key')."; render(); return; }
+  t.startError = null;
+
+  const mode = t.mode === "chat" ? "chat" : "image";
+  const refFiles = t.refs.map(r=>r.file);
+  const refThumbs = t.refs.map(r=>({url:r.url}));
+  const userItem = { role:"user", text: promptText, refs: refThumbs };
+  const aiItemId = "chat_"+Date.now();
+  const aiItem = mode==="chat"
+    ? { role:"ai", id: aiItemId, pending:true, mode:"chat" }
+    : { role:"ai", id: aiItemId, pending:true, mode:"image", total: t.count, images:[] };
+  t.items.push(userItem, aiItem);
+  t.running = true;
+  // dọn ô soạn thảo ngay để cảm giác giống chat thật
+  t.prompt = ""; t.refs = [];
+  render();
+  scrollChatFeedToBottom();
+
+  const modelLabel = MODEL_OPTIONS_LABEL[t.model] || t.model;
+  const resLabel = mode==="chat" ? "—" : (RES_LABEL[t.resolution] || t.resolution);
+
+  if(mode==="chat"){
+    // Chế độ trò chuyện thường: 1 câu trả lời bằng chữ, không sinh ảnh
+    let logStatus, usageResult=null, response=null, replyText=null, errMsg=null;
+    try{
+      response = await callGeminiChatWithRetry(promptText, refFiles, t.model, null, null, "chat", ()=>{});
+      replyText = extractTextPart(response);
+      logStatus = replyText ? "success" : "no_text";
+      usageResult = computeCostFromUsage(t.model, response && response.usageMetadata);
+    }catch(err){
+      logStatus = "error";
+      errMsg = err && err.message ? err.message : "Lỗi không xác định";
+    }
+
+    aiItem.text = replyText;
+    aiItem.errMsg = (!replyText && errMsg) ? errMsg : null;
+    aiItem.pending = false;
+    render();
+    scrollChatFeedToBottom();
+
+    let costUsd, pTokens, oTokens, costSource;
+    if(usageResult){
+      costUsd=usageResult.costUsd; pTokens=usageResult.promptTokens; oTokens=usageResult.outputTokens; costSource="token thật";
+    } else {
+      costUsd = 0; pTokens=""; oTokens=""; costSource = FREE_TIER_MODELS.has(t.model) ? "miễn phí (gói Free)" : "ước tính (không lấy được token thật)";
+    }
+    if(NON_BILLABLE_STATUSES.has(logStatus)){ costUsd=0; costSource="không tính phí (lỗi)"; }
+
+    const row = {
+      timestamp: nowStr(), user: state.userName || "Không rõ",
+      model: modelLabel, resolution: resLabel,
+      format: "-", ref_image: `Chat (trò chuyện): "${promptText.slice(0,60)}"`, status: logStatus,
+      prompt_tokens: pTokens, output_tokens: oTokens,
+      cost_usd: Math.round(costUsd*10000)/10000, cost_vnd: Math.round(costUsd*USD_TO_VND), cost_source: costSource
+    };
+    await appendUsageRow(row);
+    sendRemoteLog(row);
+
+    t.running = false;
+    render();
+    scrollChatFeedToBottom();
+    refreshTodayStat();
+    if(state.adminLoggedIn) renderAdminTables();
+    return;
+  }
+
+  // Chế độ tạo ảnh (như cũ)
+  const newImages = [];
+  for(let i=0; i<t.count; i++){
+    let logStatus, usageResult=null, response=null, resultBlob=null;
+    try{
+      response = await callGeminiChatWithRetry(promptText, refFiles, t.model, t.resolution, t.aspect, "image", ()=>{});
+      const imgPart = extractImagePart(response);
+      if(imgPart){ resultBlob = b64ToBlob(imgPart.data, imgPart.mime); logStatus="success"; }
+      else { logStatus="no_image"; }
+      usageResult = computeCostFromUsage(t.model, response && response.usageMetadata);
+    }catch(err){
+      logStatus = "error";
+    }
+
+    if(resultBlob){
+      resultBlob = await finalizeImage(resultBlob);
+      const ext = state.exportFormat==="PNG" ? ".png" : ".jpg";
+      const baseName = "chat-anh-" + slugify(promptText).slice(0,40);
+      const uniqueName = getUniqueName(baseName, ext, t.usedNames);
+      const url = URL.createObjectURL(resultBlob);
+      const img = {name:uniqueName, url, blob:resultBlob, adjust:{bri:100,sat:100,hue:0}};
+      newImages.push(img);
+      t.results.push(img);
+      aiItem.images = newImages.slice();
+      render();
+      scrollChatFeedToBottom();
+    }
+
+    let costUsd, pTokens, oTokens, costSource;
+    if(usageResult){
+      costUsd=usageResult.costUsd; pTokens=usageResult.promptTokens; oTokens=usageResult.outputTokens; costSource="token thật";
+    } else {
+      const tier = t.resolution==="auto" ? "1K" : t.resolution;
+      costUsd = (PRICE_TABLE[t.model] && PRICE_TABLE[t.model][tier]) || 0.05;
+      pTokens=""; oTokens=""; costSource="ước tính (không lấy được token thật)";
+    }
+    if(NON_BILLABLE_STATUSES.has(logStatus)){ costUsd=0; costSource="không tính phí (lỗi)"; }
+
+    const row = {
+      timestamp: nowStr(), user: state.userName || "Không rõ",
+      model: modelLabel, resolution: resLabel,
+      format: state.exportFormat, ref_image: `Chat AI: "${promptText.slice(0,60)}"`, status: logStatus,
+      prompt_tokens: pTokens, output_tokens: oTokens,
+      cost_usd: Math.round(costUsd*10000)/10000, cost_vnd: Math.round(costUsd*USD_TO_VND), cost_source: costSource
+    };
+    await appendUsageRow(row);
+    sendRemoteLog(row);
+  }
+
+  aiItem.pending = false;
+  t.running = false;
+  render();
+  scrollChatFeedToBottom();
+  refreshTodayStat();
+  if(state.adminLoggedIn) renderAdminTables();
+}
+function scrollChatFeedToBottom(){
+  const feed = document.getElementById("chatFeed");
+  if(feed) feed.scrollTop = feed.scrollHeight;
+}
+
+/* Sửa lại (bằng lệnh AI) các ảnh kết quả mà người dùng chưa ưng ý — dùng chung
+   cho tab Đổi màu và tab Ghép hoạ tiết. Ảnh gửi lại cho AI là ảnh ĐÃ áp dụng
+   chỉnh sáng/tối, tông màu hiện tại (để AI "nhìn thấy" đúng những gì người
+   dùng đang thấy trên preview). */
+async function reEditSelectedResults(tabKey){
+  const t = state[tabKey];
+  const selected = t.results.filter(r=>r.selected);
+  if(!selected.length){ t.startError = "❌ Hãy tick chọn ít nhất 1 ảnh cần sửa lại."; render(); return; }
+  if(!t.reEditPrompt || !t.reEditPrompt.trim()){ t.startError = "❌ Nhập lệnh mô tả bạn muốn sửa gì (VD: \"đậm hơn nữa\", \"hoạ tiết to hơn\")."; render(); return; }
+  if(!state.apiKey){ t.startError = "❌ Cần API Key để sửa lại bằng AI."; render(); return; }
+  t.startError = null;
+  t.reEditRunning = true; render();
+
+  const modelLabel = MODEL_OPTIONS_LABEL[state.model];
+  const resLabel = RES_LABEL[state.resolution];
+
+  for(const r of selected){
+    t.log.push(`🔧 Đang sửa lại: ${r.name}`);
+    render();
+    try{
+      const bakedBlob = await bakeAdjustedBlob(r.url, r.adjust);
+      const b64 = await fileToBase64(bakedBlob);
+      const mime = bakedBlob.type || "image/png";
+      const prompt = `Đây là ảnh đã được AI chỉnh sửa, nhưng người dùng chưa hài lòng với kết quả. Hãy chỉnh sửa lại đúng theo yêu cầu sau, giữ nguyên bố cục, kiểu dáng, form, nền và người mẫu (nếu có), chỉ thay đổi theo đúng mô tả: ${t.reEditPrompt.trim()}`;
+      const response = await callGeminiSingleWithRetry(prompt, b64, mime, (msg)=>{ t.log.push(`${r.name}: ${msg}`); render(); });
+      const imgPart = extractImagePart(response);
+      let logStatus, usageResult=null;
+      if(imgPart){
+        let blob = b64ToBlob(imgPart.data, imgPart.mime);
+        blob = await finalizeImage(blob);
+        URL.revokeObjectURL(r.url);
+        r.blob = blob; r.url = URL.createObjectURL(blob);
+        r.adjust = {bri:100, sat:100, hue:0};
+        r.selected = false; r.editOpen = false;
+        t.log.push(`✅ Đã sửa lại: ${r.name}`);
+        logStatus = "success";
+      } else {
+        t.log.push(`⚠️ Không nhận được ảnh kết quả khi sửa lại: ${r.name}`);
+        logStatus = "no_image";
+      }
+      usageResult = computeCostFromUsage(state.model, response && response.usageMetadata);
+      let costUsd, pTokens, oTokens, costSource;
+      if(usageResult){ costUsd=usageResult.costUsd; pTokens=usageResult.promptTokens; oTokens=usageResult.outputTokens; costSource="token thật"; }
+      else{
+        const tier = state.resolution==="auto" ? "1K" : state.resolution;
+        costUsd = (PRICE_TABLE[state.model] && PRICE_TABLE[state.model][tier]) || 0.05;
+        pTokens=""; oTokens=""; costSource="ước tính (không lấy được token thật)";
+      }
+      if(NON_BILLABLE_STATUSES.has(logStatus)){ costUsd=0; costSource="không tính phí (lỗi)"; }
+      const row = {
+        timestamp: nowStr(), user: state.userName || "Không rõ", model: modelLabel, resolution: resLabel,
+        format: state.exportFormat, ref_image: `Sửa lại: ${r.name}`, status: logStatus,
+        prompt_tokens: pTokens, output_tokens: oTokens,
+        cost_usd: Math.round(costUsd*10000)/10000, cost_vnd: Math.round(costUsd*USD_TO_VND), cost_source: costSource
+      };
+      await appendUsageRow(row);
+      sendRemoteLog(row);
+    }catch(err){
+      t.log.push(`❌ Lỗi khi sửa lại ${r.name}: ${err.message}`);
+    }
+    render();
+  }
+
+  t.reEditRunning = false;
+  render();
+  refreshTodayStat();
+  if(state.adminLoggedIn) renderAdminTables();
+}
+
 async function downloadZip(tabKey){
   const t = state[tabKey];
   if(!t.results.length) return;
   const zip = new JSZip();
-  t.results.forEach(r=> zip.file(r.name, r.blob));
+  for(const r of t.results){
+    const finalBlob = r.adjust ? await bakeAdjustedBlob(r.url, r.adjust) : r.blob;
+    zip.file(r.name, finalBlob);
+  }
   const content = await zip.generateAsync({type:"blob"});
   const url = URL.createObjectURL(content);
   const a = document.createElement("a");
-  a.href = url; a.download = tabKey==="tab1" ? "photo_swap_results.zip" : "pattern_results.zip";
+  a.href = url; a.download = tabKey==="tab1" ? "photo_swap_results.zip" : tabKey==="tab2" ? "doi_mau_trang_phuc.zip" : tabKey==="tab3" ? "ghep_hoa_tiet.zip" : "chat_ai_results.zip";
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 4000);
 }
@@ -715,7 +1451,9 @@ function render(){
   content.innerHTML = `
     <div class="tabbar" style="margin:-20px -24px 20px;border-radius:0;">
       <button class="tabbtn ${state.activeTab===1?'active':''}" data-tab="1">🔄 Thay trang phục</button>
-      <button class="tabbtn ${state.activeTab===2?'active':''}" data-tab="2">🎨 Thêm hoạ tiết vào áo</button>
+      <button class="tabbtn ${state.activeTab===2?'active':''}" data-tab="2">🎨 Đổi màu trang phục</button>
+      <button class="tabbtn ${state.activeTab===3?'active':''}" data-tab="3">🧵 Ghép hoạ tiết</button>
+      <button class="tabbtn ${state.activeTab===4?'active':''}" data-tab="4">💬 Chat với AI</button>
     </div>
     <div id="tabPane"></div>
     <div id="adminPane"></div>
@@ -727,58 +1465,45 @@ function render(){
 }
 
 function renderTabPane(){
-  const key = state.activeTab===1 ? "tab1" : "tab2";
-  const t = state[key];
   const pane = document.getElementById("tabPane");
+  if(state.activeTab===1) renderTab1Pane(pane);
+  else if(state.activeTab===2) renderColorTab(pane);
+  else if(state.activeTab===3) renderPatternTab(pane);
+  else renderChatTab(pane);
+}
+
+function renderTab1Pane(pane){
+  const key = "tab1";
+  const t = state.tab1;
 
   const uploadStepHtml = `
     <div class="card">
       <h4><span class="step-num">1</span> Tải ảnh lên</h4>
       <div class="upload-grid">
         <div>
-          <label class="small-label">${key==="tab1" ? "📷 Ảnh gốc (người mẫu)" : "📷 Ảnh gốc (người mặc áo)"}</label>
+          <label class="small-label">📷 Ảnh gốc (người mẫu)</label>
           <div class="uploader ${t.source?'has-file':''}" id="srcUploader-${key}">
             <input type="file" accept="image/*" id="srcInput-${key}">
             ${t.source ? `<div class="preview-single"><img src="${t.source.url}"></div><div class="hint">${t.source.file.name}</div>`
-                       : `<div class="icon">🖼️</div><div class="label">${key==="tab1"?"Ảnh gốc":"Ảnh người mặc áo"}</div><div class="hint">kéo thả hoặc bấm để chọn</div>`}
+                       : `<div class="icon">🖼️</div><div class="label">Ảnh gốc</div><div class="hint">kéo thả · bấm để dán · nhấp đôi để chọn file</div>`}
           </div>
         </div>
         <div>
-          <label class="small-label">${key==="tab1" ? "👕 Ảnh tham chiếu (trang phục) — có thể chọn nhiều ảnh" : "🎨 Ảnh hoạ tiết / logo / hình in — có thể chọn nhiều ảnh"}</label>
+          <label class="small-label">👕 Ảnh tham chiếu (trang phục) — có thể chọn nhiều ảnh</label>
           <div class="uploader ${t.refs.length?'has-file':''}" id="refUploader-${key}" style="position:relative;">
             <input type="file" accept="image/*" multiple id="refInput-${key}">
             ${t.refs.length ? `<div class="count-badge">${t.refs.length}</div><div class="thumbs">${t.refs.map(r=>`<img src="${r.url}">`).join("")}</div>`
-                            : `<div class="icon">📁</div><div class="label">${key==="tab1"?"Ảnh tham chiếu":"Ảnh hoạ tiết"}</div><div class="hint">kéo thả hoặc bấm để chọn</div>`}
+                            : `<div class="icon">📁</div><div class="label">Ảnh tham chiếu</div><div class="hint">kéo thả · bấm để dán · nhấp đôi để chọn file</div>`}
           </div>
         </div>
       </div>
     </div>`;
 
-  let step2Html;
-  if(key==="tab1"){
-    step2Html = `
-      <div class="card">
-        <h4><span class="step-num">2</span> Mô tả yêu cầu</h4>
-        <textarea class="promptbox" id="promptBox-${key}">${t.prompt}</textarea>
-      </div>`;
-  } else {
-    step2Html = `
-      <div class="card">
-        <h4><span class="step-num">2</span> Vị trí & mô tả</h4>
-        <div class="row" style="margin-bottom:12px;">
-          <div>
-            <label class="small-label">Vị trí in hoạ tiết</label>
-            <select class="field" id="posSelect">${Object.keys(PATTERN_POSITIONS).map(p=>`<option ${p===t.position?'selected':''}>${p}</option>`).join("")}</select>
-          </div>
-          <div>
-            <label class="small-label">Kích thước hoạ tiết</label>
-            <select class="field" id="sizeSelect2">${Object.keys(PATTERN_SIZES).map(s=>`<option ${s===t.size?'selected':''}>${s}</option>`).join("")}</select>
-          </div>
-        </div>
-        <label class="small-label">Mô tả cách in hoạ tiết (có thể chỉnh lại)</label>
-        <textarea class="promptbox" id="promptBox-${key}">${t.prompt}</textarea>
-      </div>`;
-  }
+  const step2Html = `
+    <div class="card">
+      <h4><span class="step-num">2</span> Mô tả yêu cầu</h4>
+      <textarea class="promptbox" id="promptBox-${key}">${t.prompt}</textarea>
+    </div>`;
 
   const count = t.refs.length;
   const pre = estimatePreRunCost(count);
@@ -789,14 +1514,14 @@ function renderTabPane(){
       <h4><span class="step-num">3</span> Xử lý</h4>
       ${count ? `
       <div class="stat-row">
-        <div class="statbox"><div class="lbl">${key==="tab1"?"Số ảnh sẽ xử lý":"Số hoạ tiết sẽ thử"}</div><div class="val">${count}</div></div>
+        <div class="statbox"><div class="lbl">Số ảnh sẽ xử lý</div><div class="val">${count}</div></div>
         <div class="statbox money"><div class="lbl">Chi phí ước tính (trước khi chạy)</div><div class="val">${fmtVND(pre.usd*USD_TO_VND)}</div></div>
       </div>
       <div class="caption">💡 Đây chỉ là số ước tính trước khi chạy (giả định prompt ngắn). Sau khi xử lý xong, tiền THẬT sẽ tính lại theo số token API trả về cho từng ảnh — xem mục Lịch sử sử dụng &amp; thanh toán (khu vực quản trị).<br>Tỷ giá quy đổi tạm tính: 1 USD ≈ ${USD_TO_VND.toLocaleString('vi-VN')}₫</div>` : ``}
       <button class="primary-btn ${t.running?'stop':''}" id="runBtn-${key}">
-        ${t.running ? '⏹ Dừng tiến trình' : (key==="tab1" ? '🚀 Bắt đầu xử lý' : '🚀 Bắt đầu in hoạ tiết')}
+        ${t.running ? '⏹ Dừng tiến trình' : '🚀 Bắt đầu xử lý'}
       </button>
-      ${!canRun && !t.running ? `<div class="warn-caption">⚠️ Vui lòng tải lên ảnh gốc và ít nhất một ảnh ${key==="tab1"?"tham chiếu":"hoạ tiết"} để bắt đầu.</div>` : ``}
+      ${!canRun && !t.running ? `<div class="warn-caption">⚠️ Vui lòng tải lên ảnh gốc và ít nhất một ảnh tham chiếu để bắt đầu.</div>` : ``}
       ${t.startError ? `<div class="error-box">${t.startError}</div>` : ``}
     </div>`;
 
@@ -806,7 +1531,7 @@ function renderTabPane(){
     processingHtml = `
       <div class="card">
         <h4>⏳ Đang xử lý</h4>
-        <div class="progress-label"><span>${t.idx}/${t.total} ${key==="tab1"?"ảnh":"hoạ tiết"}</span><span>${pct}%</span></div>
+        <div class="progress-label"><span>${t.idx}/${t.total} ảnh</span><span>${pct}%</span></div>
         <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>
         <details class="log-expander" open><summary>📜 Nhật ký xử lý</summary>
           <div class="log-lines">${t.log.slice(-40).map(l=>`<div>${l}</div>`).join("")}</div>
@@ -829,7 +1554,7 @@ function renderTabPane(){
         </div>
         ${ok ? `<div class="result-grid">${t.results.map(r=>`<img src="${r.url}" title="${r.name}">`).join("")}</div>
                <button class="download-btn" id="zipBtn-${key}" style="margin-top:12px;">⬇️ Tải tất cả kết quả (.zip)</button>` : ``}
-        ${err ? `<details class="log-expander" style="margin-top:12px;"><summary>❌ Chi tiết ${err} ${key==="tab1"?"ảnh":"hoạ tiết"} lỗi</summary>
+        ${err ? `<details class="log-expander" style="margin-top:12px;"><summary>❌ Chi tiết ${err} ảnh lỗi</summary>
               <div style="padding:8px 12px;">${t.errors.map(e=>`<div class="err-row"><b>${e.name}:</b> ${e.reason}</div>`).join("")}</div>
             </details>` : ``}
       </div>`;
@@ -839,35 +1564,17 @@ function renderTabPane(){
 
   const srcUp = document.getElementById(`srcUploader-${key}`);
   const srcIn = document.getElementById(`srcInput-${key}`);
-  srcUp.onclick = ()=> srcIn.click();
-  srcIn.onchange = (e)=>{ const f = e.target.files[0]; if(!f) return; t.source = {file:f, url:URL.createObjectURL(f)}; render(); };
+  const setSource = (files)=>{ if(!files.length) return; t.source = {file:files[0], url:URL.createObjectURL(files[0])}; render(); };
+  srcIn.onchange = (e)=> setSource(Array.from(e.target.files||[]));
+  wireUploader(srcUp, srcIn, setSource);
 
   const refUp = document.getElementById(`refUploader-${key}`);
   const refIn = document.getElementById(`refInput-${key}`);
-  refUp.onclick = ()=> refIn.click();
-  refIn.onchange = (e)=>{ const files = Array.from(e.target.files||[]); t.refs = files.map(f=>({file:f, url:URL.createObjectURL(f)})); render(); };
-
-  ["dragover","drop"].forEach(evt=>{
-    [srcUp, refUp].forEach(el=>{
-      el.addEventListener(evt, (ev)=>{
-        ev.preventDefault();
-        if(evt==="drop"){
-          const files = Array.from(ev.dataTransfer.files||[]);
-          if(!files.length) return;
-          if(el===srcUp){ t.source = {file:files[0], url:URL.createObjectURL(files[0])}; }
-          else { t.refs = files.map(f=>({file:f,url:URL.createObjectURL(f)})); }
-          render();
-        }
-      });
-    });
-  });
+  const setRefs = (files)=>{ if(!files.length) return; t.refs = files.map(f=>({file:f, url:URL.createObjectURL(f)})); render(); };
+  refIn.onchange = (e)=> setRefs(Array.from(e.target.files||[]));
+  wireUploader(refUp, refIn, setRefs);
 
   document.getElementById(`promptBox-${key}`).oninput = (e)=>{ t.prompt = e.target.value; };
-
-  if(key==="tab2"){
-    document.getElementById("posSelect").onchange = (e)=>{ t.position=e.target.value; t.prompt = buildTab2Prompt(t.position,t.size); document.getElementById(`promptBox-${key}`).value = t.prompt; };
-    document.getElementById("sizeSelect2").onchange = (e)=>{ t.size=e.target.value; t.prompt = buildTab2Prompt(t.position,t.size); document.getElementById(`promptBox-${key}`).value = t.prompt; };
-  }
 
   document.getElementById(`runBtn-${key}`).onclick = ()=>{
     if(t.running){ t.stopRequested = true; }
@@ -875,6 +1582,654 @@ function renderTabPane(){
   };
   const zipBtn = document.getElementById(`zipBtn-${key}`);
   if(zipBtn) zipBtn.onclick = ()=> downloadZip(key);
+}
+
+/* =========================================================================
+   RENDER: TAB 2 — ĐỔI MÀU TRANG PHỤC (miễn phí cục bộ hoặc AI trả phí)
+========================================================================= */
+function renderColorTab(pane){
+  const t = state.tab2;
+
+  const guideHtml = `
+    <details class="log-expander" style="margin-bottom:14px;" ${t.hasRun?'':'open'}>
+      <summary>📖 Hướng dẫn sử dụng (bấm để ẩn/hiện)</summary>
+      <div class="guide-box" style="border-radius:0 0 8px 8px;border-top:none;">
+        <b>Đổi màu trang phục bằng AI — quy trình 4 bước:</b>
+        <ol>
+          <li><b>Tải ảnh</b> trang phục lên (có thể chọn nhiều ảnh cùng lúc).</li>
+          <li><b>Chọn màu</b> muốn đổi bằng 1 trong 2 khối tách riêng bên dưới: khối <b>"🎨 Chọn màu thủ công"</b> (bấm ô vuông chọn màu chính xác, hoặc gõ mô tả bằng lời như "xanh pastel nhạt", "be sữa ánh kim" để AI bám theo), và khối <b>"🖼️ Đổi màu theo tham chiếu ảnh"</b> (tải lên ảnh mẫu màu — kéo thả, bấm 1 phát để dán từ clipboard, hoặc nhấp đôi để chọn file trong máy — AI sẽ tự lấy đúng màu trong ảnh đó áp vào trang phục, không cần biết tên màu hay mã màu). Có thể dùng cả 2 khối cùng lúc để tạo nhiều phiên bản, và nhập thêm ghi chú phong cách ở ô "Mô tả thêm cho AI".</li>
+          <li><b>Bấm "Bắt đầu đổi màu"</b> và chờ AI xử lý từng ảnh × từng màu.</li>
+          <li><b>Xem trước & tinh chỉnh:</b> sau khi có kết quả, mỗi ảnh có nút <b>🎚 Chỉnh sáng/tối, tông màu</b> — kéo các thanh trượt để chỉnh độ sáng, độ bão hoà, tông màu ngay trên preview, không cần tải về mới xem được. Ảnh nào chưa ưng ý, tick vào ô "chưa ưng ý" dưới ảnh, mô tả điều cần sửa ở ô bên dưới rồi bấm "Sửa lại ảnh đã chọn bằng AI" — AI sẽ chỉnh lại đúng những ảnh đó theo đúng những gì bạn đang thấy trên preview.</li>
+        </ol>
+        Khi đã ưng ý, bấm <b>"Tải tất cả kết quả (.zip)"</b> — mọi chỉnh sửa sáng/tối, tông màu bạn đã kéo sẽ được lưu thẳng vào ảnh tải về.
+      </div>
+    </details>`;
+
+  const uploadHtml = `
+    <div class="card">
+      <h4><span class="step-num">1</span> Tải ảnh trang phục lên (áo, quần, chân váy, set đồ...)</h4>
+      <div class="uploader ${t.sources.length?'has-file':''}" id="colorUploader" style="position:relative;">
+        <input type="file" accept="image/*" multiple id="colorInput">
+        ${t.sources.length ? `<div class="count-badge">${t.sources.length}</div><div class="thumbs">${t.sources.map(r=>`<img src="${r.url}">`).join("")}</div>`
+                            : `<div class="icon">👕</div><div class="label">Ảnh trang phục — có thể chọn nhiều ảnh</div><div class="hint">kéo thả · bấm để dán · nhấp đôi để chọn file</div>`}
+      </div>
+    </div>`;
+
+  const pickColors = t.colors.filter(c=>c.mode!=="ref");
+  const refColors = t.colors.filter(c=>c.mode==="ref");
+
+  const pickRows = pickColors.map(c=>`
+    <div class="color-slot-item" data-id="${c.id}">
+      <div class="color-slot">
+        <input type="color" class="color-swatch-input" data-id="${c.id}" value="${c.hex||'#5b3a8e'}">
+        <input type="text" class="field color-name-input" data-id="${c.id}" value="${c.name}" placeholder="Tên màu hoặc mô tả (VD: xanh pastel nhạt, be sữa...)">
+        <button class="color-remove-btn" data-id="${c.id}" ${t.colors.length<=1?'disabled':''}>✕</button>
+      </div>
+    </div>`).join("");
+  const presetSwatches = COLOR_PRESETS.map(p=>`<button class="swatch-btn" style="background:${p.hex}" data-hex="${p.hex}" data-name="${p.name}" title="${p.name}"></button>`).join("");
+
+  const pickColorsHtml = `
+    <div class="card">
+      <h4><span class="step-num">2</span> 🎨 Chọn màu thủ công (${pickColors.length} màu)</h4>
+      <div class="caption" style="margin-bottom:10px;">Bấm ô vuông để chọn màu chính xác, hoặc gõ mô tả bằng lời (VD: "cam đất nhạt", "xanh navy hơi xám") để AI bám theo.</div>
+      <div class="color-slots">${pickRows || `<div class="empty-note">Chưa có màu thủ công nào.</div>`}</div>
+      <button class="link-btn" id="addColorBtn" style="margin-top:10px;" ${t.colors.length>=8?'disabled':''}>➕ Thêm màu thủ công</button>
+      <div class="small-label" style="margin-top:14px;">Màu gợi ý (bấm để thêm nhanh)</div>
+      <div class="preset-swatches">${presetSwatches}</div>
+    </div>`;
+
+  const refRows = refColors.map(c=>`
+    <div class="ref-color-item" data-id="${c.id}">
+      <div class="ref-color-big-uploader ${c.refUrl?'has-file':''}" data-id="${c.id}">
+        ${c.refUrl ? `<img src="${c.refUrl}">` : `<span class="icon">🖼️</span><span>dán / kéo thả /<br>nhấp đôi</span>`}
+      </div>
+      <input type="file" accept="image/*" class="refColorInput" data-id="${c.id}" style="display:none;">
+      <input type="text" class="field color-name-input" data-id="${c.id}" value="${c.name}" placeholder="Nhãn (tuỳ chọn, VD: Theo ảnh mẫu 1)">
+      <button class="color-remove-btn" data-id="${c.id}" ${t.colors.length<=1?'disabled':''}>✕</button>
+    </div>`).join("");
+
+  const refColorsHtml = `
+    <div class="card">
+      <h4><span class="step-num">3</span> 🖼️ Đổi màu theo tham chiếu ảnh (${refColors.length} ảnh)</h4>
+      <div class="caption" style="margin-bottom:10px;">Tải lên 1 ảnh mẫu màu (ảnh vải, mood board, sản phẩm khác...) — AI sẽ tự lấy đúng màu trong ảnh đó áp vào trang phục, không cần biết tên màu hay mã màu. Ô tải ảnh: <b>bấm 1 phát</b> để sẵn sàng dán ảnh từ clipboard (Ctrl+V), <b>nhấp đôi</b> để chọn file trong máy, hoặc kéo thả ảnh vào thẳng ô.</div>
+      <div class="ref-color-grid">${refRows || `<div class="empty-note">Chưa có ảnh tham chiếu màu nào.</div>`}</div>
+      <button class="link-btn" id="addRefColorBtn" style="margin-top:10px;" ${t.colors.length>=8?'disabled':''}>➕ Thêm ảnh tham chiếu</button>
+    </div>`;
+
+  const extraNoteHtml = `
+    <div class="card">
+      <label class="small-label">Mô tả thêm cho AI (tuỳ chọn — VD: "kiểu vintage", "ánh kim nhẹ"...)</label>
+      <textarea class="promptbox" id="aiExtraBox" style="min-height:60px;">${t.aiExtra}</textarea>
+    </div>`;
+
+  const count = t.sources.length * t.colors.length;
+  const pre = estimatePreRunCost(count);
+  const canRun = !!(t.sources.length && t.colors.length && state.apiKey);
+
+  const runHtml = `
+    <div class="card">
+      <h4><span class="step-num">4</span> Xử lý</h4>
+      ${count ? `
+      <div class="stat-row">
+        <div class="statbox"><div class="lbl">Số ảnh sẽ tạo (ảnh × màu)</div><div class="val">${count}</div></div>
+        <div class="statbox money"><div class="lbl">Chi phí ước tính</div><div class="val">${fmtVND(pre.usd*USD_TO_VND)}</div></div>
+      </div>
+      <div class="caption">💡 Số ước tính trước khi chạy. Tiền THẬT sẽ tính lại theo token API trả về — xem khu Admin. Tỷ giá tạm tính: 1 USD ≈ ${USD_TO_VND.toLocaleString('vi-VN')}₫</div>` : ``}
+      <button class="primary-btn ${t.running?'stop':''}" id="runColorBtn">
+        ${t.running ? '⏹ Dừng tiến trình' : '🚀 Bắt đầu đổi màu'}
+      </button>
+      ${!canRun && !t.running ? `<div class="warn-caption">⚠️ Cần tải ảnh trang phục, chọn ít nhất 1 màu, và nhập API key để bắt đầu.</div>` : ``}
+      ${t.startError ? `<div class="error-box">${t.startError}</div>` : ``}
+    </div>`;
+
+  let processingHtml = "";
+  if(t.running || t.reEditRunning || (t.total>0 && !t.hasRun)){
+    const pct = t.total ? Math.round((t.idx/t.total)*100) : 0;
+    processingHtml = `
+      <div class="card">
+        <h4>⏳ Đang xử lý</h4>
+        ${t.running ? `<div class="progress-label"><span>${t.idx}/${t.total} ảnh</span><span>${pct}%</span></div>
+        <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>` : ``}
+        <details class="log-expander" open><summary>📜 Nhật ký xử lý</summary>
+          <div class="log-lines">${t.log.slice(-40).map(l=>`<div>${l}</div>`).join("")}</div>
+        </details>
+      </div>`;
+  }
+
+  let summaryHtml = "";
+  if(t.hasRun){
+    const ok=t.results.length, err=t.errors.length, total=t.idx;
+    const elapsed = Math.round((Date.now()-t.startTime)/1000);
+    t.results.forEach((r,i)=>{ r._i = i; });
+    const groups = {};
+    t.results.forEach(r=>{ (groups[r.sourceName] = groups[r.sourceName]||[]).push(r); });
+    const groupsHtml = Object.entries(groups).map(([src, arr])=>`
+      <div style="margin-top:12px;">
+        <div class="small-label">${src}</div>
+        <div class="result-grid">${arr.map(r=>`
+          <div class="result-card">
+            <div class="result-thumb-wrap">
+              <img id="resImg_${r._i}" src="${r.url}" title="${r.name}" style="filter:${cssFilterFor(r.adjust)}">
+              <label class="result-check"><input type="checkbox" class="resSelChk" data-i="${r._i}" ${r.selected?'checked':''}> chưa ưng ý</label>
+            </div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center;">${r.colorName}</div>
+            <button class="link-btn resEditToggle" data-i="${r._i}" style="width:100%;margin-top:5px;font-size:11px;padding:5px 8px;justify-content:center;">🎚 Chỉnh sáng/tối, tông màu</button>
+            <div class="adjust-panel" id="adjustPanel_${r._i}" style="display:${r.editOpen?'block':'none'};">
+              <div class="adjust-row">
+                <span class="adjust-label">☀️ Độ sáng</span>
+                <input type="range" min="50" max="150" value="${r.adjust.bri}" class="resSlider" data-i="${r._i}" data-key="bri">
+                <span class="adjust-val" id="valBri_${r._i}">${r.adjust.bri}%</span>
+              </div>
+              <div class="adjust-row">
+                <span class="adjust-label">🎨 Bão hoà</span>
+                <input type="range" min="0" max="200" value="${r.adjust.sat}" class="resSlider" data-i="${r._i}" data-key="sat">
+                <span class="adjust-val" id="valSat_${r._i}">${r.adjust.sat}%</span>
+              </div>
+              <div class="adjust-row">
+                <span class="adjust-label">🌈 Tông màu</span>
+                <input type="range" min="-180" max="180" value="${r.adjust.hue}" class="resSlider" data-i="${r._i}" data-key="hue">
+                <span class="adjust-val" id="valHue_${r._i}">${r.adjust.hue}°</span>
+              </div>
+              <button class="link-btn resResetAdjust" data-i="${r._i}" style="width:100%;margin-top:6px;font-size:11px;justify-content:center;">↺ Đặt lại mặc định</button>
+            </div>
+          </div>`).join("")}</div>
+      </div>`).join("");
+    const selectedCount = t.results.filter(r=>r.selected).length;
+    const reEditHtml = ok ? `
+      <div class="reedit-box">
+        <div class="small-label">✏️ Sửa lại ảnh chưa ưng ý bằng lệnh AI ${selectedCount?`(${selectedCount} ảnh đã chọn)`:''}</div>
+        <textarea class="promptbox" id="reEditBox" placeholder="VD: đậm hơn nữa, ngả sang tông xanh rêu nhiều hơn, giảm độ chói..." style="min-height:56px;margin-top:6px;">${t.reEditPrompt}</textarea>
+        <button class="primary-btn ${t.reEditRunning?'stop':''}" id="reEditBtn" style="margin-top:8px;" ${t.reEditRunning?'disabled':''}>
+          ${t.reEditRunning ? '⏳ Đang sửa lại...' : '🔁 Sửa lại ảnh đã chọn bằng AI'}
+        </button>
+        <div class="caption" style="margin-top:6px;">💡 Tick "chưa ưng ý" dưới mỗi ảnh ở trên, mô tả điều bạn muốn sửa, rồi bấm nút này. AI sẽ chỉnh lại đúng những ảnh đã chọn, dựa trên đúng những gì đang hiện trên preview (kể cả sáng/tối, tông màu bạn vừa chỉnh). Mỗi ảnh sửa lại tính phí như 1 lượt tạo ảnh mới.</div>
+      </div>` : ``;
+    summaryHtml = `
+      <div class="card">
+        <h4>📋 Tổng kết</h4>
+        ${t.stoppedEarly ? `<div class="status-msg warn">⏹ Đã dừng theo yêu cầu — đã xử lý ${t.idx}/${t.total}.</div>` : `<div class="status-msg success">✅ Hoàn tất trong ${elapsed}s</div>`}
+        <div class="summary-badges" style="margin-top:12px;">
+          <div class="sum-badge ok">✅ Thành công<span class="n">${ok}/${total}</span></div>
+          ${err ? `<div class="sum-badge err">⚠️ Lỗi<span class="n">${err}/${total}</span></div>` : ``}
+        </div>
+        ${ok ? `${groupsHtml}<button class="download-btn" id="zipBtnColor" style="margin-top:12px;">⬇️ Tải tất cả kết quả (.zip)</button>${reEditHtml}` : ``}
+        ${err ? `<details class="log-expander" style="margin-top:12px;"><summary>❌ Chi tiết ${err} lỗi</summary>
+              <div style="padding:8px 12px;">${t.errors.map(e=>`<div class="err-row"><b>${e.name}:</b> ${e.reason}</div>`).join("")}</div>
+            </details>` : ``}
+      </div>`;
+  }
+
+  pane.innerHTML = guideHtml + uploadHtml + pickColorsHtml + refColorsHtml + extraNoteHtml + runHtml + processingHtml + summaryHtml;
+
+  const upEl = document.getElementById("colorUploader");
+  const inEl = document.getElementById("colorInput");
+  const setSources = (files)=>{ if(!files.length) return; t.sources = files.map(f=>({file:f,url:URL.createObjectURL(f)})); render(); };
+  inEl.onchange = (e)=> setSources(Array.from(e.target.files||[]));
+  wireUploader(upEl, inEl, setSources);
+
+  document.querySelectorAll(".color-swatch-input").forEach(el=>{
+    el.oninput = (e)=>{ const id=+e.target.dataset.id; const c=t.colors.find(x=>x.id===id); if(c) c.hex=e.target.value; };
+  });
+  document.querySelectorAll(".color-name-input").forEach(el=>{
+    el.oninput = (e)=>{ const id=+e.target.dataset.id; const c=t.colors.find(x=>x.id===id); if(c) c.name=e.target.value; };
+  });
+  document.querySelectorAll(".color-remove-btn").forEach(el=>{
+    el.onclick = (e)=>{ const id=+e.currentTarget.dataset.id; t.colors = t.colors.filter(x=>x.id!==id); render(); };
+  });
+  document.querySelectorAll(".ref-color-big-uploader").forEach(el=>{
+    const id = el.dataset.id;
+    const inp = document.querySelector(`.refColorInput[data-id="${id}"]`);
+    const setRefColor = (files)=>{
+      const f = files[0]; if(!f) return;
+      const c=t.colors.find(x=>x.id===+id); if(!c) return;
+      if(c.refUrl) URL.revokeObjectURL(c.refUrl);
+      c.refFile=f; c.refUrl=URL.createObjectURL(f);
+      render();
+    };
+    if(inp) inp.onchange = (e)=> setRefColor(Array.from(e.target.files||[]));
+    wireUploader(el, inp, setRefColor);
+  });
+  document.getElementById("addColorBtn").onclick = ()=>{
+    if(t.colors.length>=8) return;
+    t.colors.push({id:t.nextColorId++, mode:"pick", hex:"#5b3a8e", name:"Màu mới"});
+    render();
+  };
+  const addRefColorBtn = document.getElementById("addRefColorBtn");
+  if(addRefColorBtn) addRefColorBtn.onclick = ()=>{
+    if(t.colors.length>=8) return;
+    t.colors.push({id:t.nextColorId++, mode:"ref", name:"Theo ảnh mẫu"});
+    render();
+  };
+  document.querySelectorAll(".swatch-btn").forEach(el=>{
+    el.onclick = ()=>{
+      if(t.colors.length>=8) return;
+      t.colors.push({id:t.nextColorId++, mode:"pick", hex:el.dataset.hex, name:el.dataset.name});
+      render();
+    };
+  });
+  const aiExtraBox = document.getElementById("aiExtraBox");
+  if(aiExtraBox) aiExtraBox.oninput = (e)=>{ t.aiExtra = e.target.value; };
+
+  document.getElementById("runColorBtn").onclick = ()=>{
+    if(t.running){ t.stopRequested = true; } else { processColorBatch(); }
+  };
+  const zipBtnColor = document.getElementById("zipBtnColor");
+  if(zipBtnColor) zipBtnColor.onclick = ()=> downloadZip("tab2");
+
+  /* --- kết quả: chỉnh sáng/tối, tông màu (preview tức thì, không re-render toàn trang) --- */
+  document.querySelectorAll(".resEditToggle").forEach(el=>{
+    el.onclick = (e)=>{ const i=+e.currentTarget.dataset.i; const r=t.results[i]; if(r){ r.editOpen=!r.editOpen; render(); } };
+  });
+  document.querySelectorAll(".resResetAdjust").forEach(el=>{
+    el.onclick = (e)=>{ const i=+e.currentTarget.dataset.i; const r=t.results[i]; if(r){ r.adjust={bri:100,sat:100,hue:0}; render(); } };
+  });
+  document.querySelectorAll(".resSelChk").forEach(el=>{
+    el.onchange = (e)=>{ const i=+e.target.dataset.i; const r=t.results[i]; if(r) r.selected = e.target.checked; };
+  });
+  document.querySelectorAll(".resSlider").forEach(el=>{
+    el.oninput = (e)=>{
+      const i = +e.target.dataset.i, key = e.target.dataset.key;
+      const r = t.results[i]; if(!r) return;
+      r.adjust[key] = +e.target.value;
+      const img = document.getElementById("resImg_"+i);
+      if(img) img.style.filter = cssFilterFor(r.adjust);
+      const valId = key==="bri" ? "valBri_"+i : key==="sat" ? "valSat_"+i : "valHue_"+i;
+      const valEl = document.getElementById(valId);
+      if(valEl) valEl.textContent = key==="hue" ? (r.adjust[key]+"°") : (r.adjust[key]+"%");
+    };
+  });
+
+  /* --- sửa lại ảnh đã chọn bằng lệnh AI --- */
+  const reEditBox = document.getElementById("reEditBox");
+  if(reEditBox) reEditBox.oninput = (e)=>{ t.reEditPrompt = e.target.value; };
+  const reEditBtn = document.getElementById("reEditBtn");
+  if(reEditBtn) reEditBtn.onclick = ()=>{ if(!t.reEditRunning) reEditSelectedResults("tab2"); };
+}
+
+/* =========================================================================
+   RENDER: TAB 3 — GHÉP HOẠ TIẾT VÀO SẢN PHẨM
+========================================================================= */
+function renderPatternTab(pane){
+  const t = state.tab3;
+
+  const guideHtml = `
+    <details class="log-expander" style="margin-bottom:14px;" ${t.hasRun?'':'open'}>
+      <summary>📖 Hướng dẫn sử dụng (bấm để ẩn/hiện)</summary>
+      <div class="guide-box" style="border-radius:0 0 8px 8px;border-top:none;">
+        <b>Ghép hoạ tiết vào sản phẩm bằng AI — quy trình 4 bước:</b>
+        <ol>
+          <li><b>Tải ảnh sản phẩm</b> thời trang (áo, quần, túi, khăn...) — có thể chọn nhiều ảnh sản phẩm cùng lúc.</li>
+          <li><b>Tải ảnh hoạ tiết</b> muốn ghép (hoạ tiết vải, logo, tranh vẽ, chất liệu...) — có thể chọn nhiều hoạ tiết để AI tạo ra nhiều phiên bản khác nhau.</li>
+          <li><b>Chọn cách áp dụng:</b> "Phủ toàn bộ bề mặt" (hoạ tiết lặp lại như in vải cả sản phẩm) hoặc "Một vùng cụ thể" (mô tả vùng, VD: "phần ngực trước", "ống tay áo", "viền cổ áo"). Kéo thanh "Mức độ hoạ tiết" để chỉnh hoạ tiết đậm/rõ hay mờ/tinh tế, và có thể ghi thêm mô tả tự do ở ô ghi chú.</li>
+          <li><b>Bấm "Bắt đầu ghép"</b> — AI sẽ tạo ra ảnh kết quả cho từng cặp sản phẩm × hoạ tiết. Sau khi có kết quả, mỗi ảnh có nút <b>🎚 Chỉnh sáng/tối, tông màu</b> để tinh chỉnh ngay trên preview trước khi tải, và có thể tick "chưa ưng ý" + nhập lệnh để AI ghép lại riêng ảnh đó.</li>
+        </ol>
+        Khi đã ưng ý, bấm <b>"Tải tất cả kết quả (.zip)"</b> để tải về — mọi chỉnh sửa sáng/tối, tông màu sẽ được lưu thẳng vào ảnh.
+      </div>
+    </details>`;
+
+  const uploadHtml = `
+    <div class="card">
+      <h4><span class="step-num">1</span> Tải ảnh sản phẩm thời trang</h4>
+      <div class="uploader ${t.products.length?'has-file':''}" id="prodUploader" style="position:relative;">
+        <input type="file" accept="image/*" multiple id="prodInput">
+        ${t.products.length ? `<div class="count-badge">${t.products.length}</div><div class="thumbs">${t.products.map(r=>`<img src="${r.url}">`).join("")}</div>`
+                             : `<div class="icon">👗</div><div class="label">Ảnh sản phẩm — có thể chọn nhiều ảnh</div><div class="hint">kéo thả · bấm để dán · nhấp đôi để chọn file</div>`}
+      </div>
+    </div>
+    <div class="card">
+      <h4><span class="step-num">2</span> Tải ảnh hoạ tiết cần ghép</h4>
+      <div class="uploader ${t.patterns.length?'has-file':''}" id="patUploader" style="position:relative;">
+        <input type="file" accept="image/*" multiple id="patInput">
+        ${t.patterns.length ? `<div class="count-badge">${t.patterns.length}</div><div class="thumbs">${t.patterns.map(r=>`<img src="${r.url}">`).join("")}</div>`
+                             : `<div class="icon">🧵</div><div class="label">Ảnh hoạ tiết / chất liệu — có thể chọn nhiều ảnh</div><div class="hint">kéo thả · bấm để dán · nhấp đôi để chọn file</div>`}
+      </div>
+    </div>`;
+
+  const optionsHtml = `
+    <div class="card">
+      <h4><span class="step-num">3</span> Cách áp dụng hoạ tiết</h4>
+      <div class="caption" style="margin-bottom:10px;">Ở cả 3 chế độ, AI sẽ tự quét ảnh sản phẩm gốc và ảnh hoạ tiết trước — xem loại trang phục, form dáng, phong cách — rồi mới ghép hoạ tiết sao cho phù hợp, không ghép máy móc.</div>
+      <div class="row">
+        <div class="mode-card ${t.placement==='full'?'active':''}" id="placeFullCard">
+          <div class="mode-title">🧶 Phủ toàn bộ bề mặt</div>
+          <div class="mode-desc">Hoạ tiết lặp lại (tiled) tự nhiên trên toàn bộ sản phẩm, như in cả tấm vải.</div>
+        </div>
+        <div class="mode-card ${t.placement==='area'?'active':''}" id="placeAreaCard">
+          <div class="mode-title">📍 Một vùng cụ thể</div>
+          <div class="mode-desc">Chỉ ghép hoạ tiết vào đúng vùng bạn mô tả, phần còn lại giữ nguyên.</div>
+        </div>
+        <div class="mode-card ${t.placement==='auto'?'active':''}" id="placeAutoCard">
+          <div class="mode-title">🤖 AI tự chọn vị trí</div>
+          <div class="mode-desc">AI quét form dáng, kiểu cắt may &amp; phong cách của sản phẩm rồi tự quyết định cách ghép phù hợp nhất.</div>
+        </div>
+      </div>
+      ${t.placement==='area' ? `
+      <div style="margin-top:12px;">
+        <label class="small-label">Mô tả vùng cần ghép hoạ tiết</label>
+        <input type="text" class="field" id="areaTextInput" value="${t.areaText}" placeholder="VD: phần ngực trước áo, ống tay áo, viền cổ áo, toàn bộ chân váy...">
+      </div>` : ``}
+      <div style="margin-top:14px;">
+        <div class="adjust-row" style="align-items:center;">
+          <span class="adjust-label" style="width:auto;font-size:12px;font-weight:600;color:var(--text);">🎚 Mức độ hoạ tiết</span>
+          <input type="range" min="10" max="100" value="${t.intensity}" id="intensitySlider" style="flex:1;accent-color:var(--blue);">
+          <span class="adjust-val" id="intensityVal" style="width:auto;font-size:12px;">${t.intensity}%</span>
+        </div>
+        <div class="caption">Kéo sang trái để hoạ tiết mờ, tinh tế hơn; kéo sang phải để hoạ tiết rõ nét, đậm, nổi bật hơn.</div>
+      </div>
+      <div style="margin-top:14px;">
+        <label class="small-label">Ghi chú thêm cho AI (tuỳ chọn — VD: "giữ màu nền sản phẩm", "hoạ tiết theo phong cách retro"...)</label>
+        <textarea class="promptbox" id="patExtraBox" style="min-height:56px;">${t.extra}</textarea>
+      </div>
+    </div>`;
+
+  const count = t.products.length * t.patterns.length;
+  const pre = estimatePreRunCost(count);
+  const canRun = !!(t.products.length && t.patterns.length && state.apiKey && (t.placement!=="area" || t.areaText.trim()));
+
+  const runHtml = `
+    <div class="card">
+      <h4><span class="step-num">4</span> Xử lý</h4>
+      ${count ? `
+      <div class="stat-row">
+        <div class="statbox"><div class="lbl">Số ảnh sẽ tạo (sản phẩm × hoạ tiết)</div><div class="val">${count}</div></div>
+        <div class="statbox money"><div class="lbl">Chi phí ước tính</div><div class="val">${fmtVND(pre.usd*USD_TO_VND)}</div></div>
+      </div>
+      <div class="caption">💡 Số ước tính trước khi chạy. Tiền THẬT sẽ tính lại theo token API trả về — xem khu Admin. Tỷ giá tạm tính: 1 USD ≈ ${USD_TO_VND.toLocaleString('vi-VN')}₫</div>` : ``}
+      <button class="primary-btn ${t.running?'stop':''}" id="runPatternBtn">
+        ${t.running ? '⏹ Dừng tiến trình' : '🚀 Bắt đầu ghép hoạ tiết'}
+      </button>
+      ${!canRun && !t.running ? `<div class="warn-caption">⚠️ Cần tải ảnh sản phẩm, ảnh hoạ tiết, nhập API key${t.placement==='area'?', và mô tả vùng cần ghép':''} để bắt đầu.</div>` : ``}
+      ${t.startError ? `<div class="error-box">${t.startError}</div>` : ``}
+    </div>`;
+
+  let processingHtml = "";
+  if(t.running || t.reEditRunning || (t.total>0 && !t.hasRun)){
+    const pct = t.total ? Math.round((t.idx/t.total)*100) : 0;
+    processingHtml = `
+      <div class="card">
+        <h4>⏳ Đang xử lý</h4>
+        ${t.running ? `<div class="progress-label"><span>${t.idx}/${t.total} ảnh</span><span>${pct}%</span></div>
+        <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>` : ``}
+        <details class="log-expander" open><summary>📜 Nhật ký xử lý</summary>
+          <div class="log-lines">${t.log.slice(-40).map(l=>`<div>${l}</div>`).join("")}</div>
+        </details>
+      </div>`;
+  }
+
+  let summaryHtml = "";
+  if(t.hasRun){
+    const ok=t.results.length, err=t.errors.length, total=t.idx;
+    const elapsed = Math.round((Date.now()-t.startTime)/1000);
+    t.results.forEach((r,i)=>{ r._i = i; });
+    const groups = {};
+    t.results.forEach(r=>{ (groups[r.sourceName] = groups[r.sourceName]||[]).push(r); });
+    const groupsHtml = Object.entries(groups).map(([src, arr])=>`
+      <div style="margin-top:12px;">
+        <div class="small-label">${src}</div>
+        <div class="result-grid">${arr.map(r=>`
+          <div class="result-card">
+            <div class="result-thumb-wrap">
+              <img id="resImg_${r._i}" src="${r.url}" title="${r.name}" style="filter:${cssFilterFor(r.adjust)}">
+              <label class="result-check"><input type="checkbox" class="resSelChk" data-i="${r._i}" ${r.selected?'checked':''}> chưa ưng ý</label>
+            </div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center;">${r.colorName}</div>
+            <button class="link-btn resEditToggle" data-i="${r._i}" style="width:100%;margin-top:5px;font-size:11px;padding:5px 8px;justify-content:center;">🎚 Chỉnh sáng/tối, tông màu</button>
+            <div class="adjust-panel" id="adjustPanel_${r._i}" style="display:${r.editOpen?'block':'none'};">
+              <div class="adjust-row">
+                <span class="adjust-label">☀️ Độ sáng</span>
+                <input type="range" min="50" max="150" value="${r.adjust.bri}" class="resSlider" data-i="${r._i}" data-key="bri">
+                <span class="adjust-val" id="valBri_${r._i}">${r.adjust.bri}%</span>
+              </div>
+              <div class="adjust-row">
+                <span class="adjust-label">🎨 Bão hoà</span>
+                <input type="range" min="0" max="200" value="${r.adjust.sat}" class="resSlider" data-i="${r._i}" data-key="sat">
+                <span class="adjust-val" id="valSat_${r._i}">${r.adjust.sat}%</span>
+              </div>
+              <div class="adjust-row">
+                <span class="adjust-label">🌈 Tông màu</span>
+                <input type="range" min="-180" max="180" value="${r.adjust.hue}" class="resSlider" data-i="${r._i}" data-key="hue">
+                <span class="adjust-val" id="valHue_${r._i}">${r.adjust.hue}°</span>
+              </div>
+              <button class="link-btn resResetAdjust" data-i="${r._i}" style="width:100%;margin-top:6px;font-size:11px;justify-content:center;">↺ Đặt lại mặc định</button>
+            </div>
+          </div>`).join("")}</div>
+      </div>`).join("");
+    const selectedCount = t.results.filter(r=>r.selected).length;
+    const reEditHtml = ok ? `
+      <div class="reedit-box">
+        <div class="small-label">✏️ Sửa lại ảnh chưa ưng ý bằng lệnh AI ${selectedCount?`(${selectedCount} ảnh đã chọn)`:''}</div>
+        <textarea class="promptbox" id="reEditBox" placeholder="VD: hoạ tiết to hơn, đặt hoạ tiết lệch sang trái, làm mờ hoạ tiết bớt..." style="min-height:56px;margin-top:6px;">${t.reEditPrompt}</textarea>
+        <button class="primary-btn ${t.reEditRunning?'stop':''}" id="reEditBtn" style="margin-top:8px;" ${t.reEditRunning?'disabled':''}>
+          ${t.reEditRunning ? '⏳ Đang sửa lại...' : '🔁 Sửa lại ảnh đã chọn bằng AI'}
+        </button>
+        <div class="caption" style="margin-top:6px;">💡 Tick "chưa ưng ý" dưới mỗi ảnh ở trên, mô tả điều bạn muốn sửa, rồi bấm nút này. Mỗi ảnh sửa lại tính phí như 1 lượt tạo ảnh mới.</div>
+      </div>` : ``;
+    summaryHtml = `
+      <div class="card">
+        <h4>📋 Tổng kết</h4>
+        ${t.stoppedEarly ? `<div class="status-msg warn">⏹ Đã dừng theo yêu cầu — đã xử lý ${t.idx}/${t.total}.</div>` : `<div class="status-msg success">✅ Hoàn tất trong ${elapsed}s</div>`}
+        <div class="summary-badges" style="margin-top:12px;">
+          <div class="sum-badge ok">✅ Thành công<span class="n">${ok}/${total}</span></div>
+          ${err ? `<div class="sum-badge err">⚠️ Lỗi<span class="n">${err}/${total}</span></div>` : ``}
+        </div>
+        ${ok ? `${groupsHtml}<button class="download-btn" id="zipBtnPattern" style="margin-top:12px;">⬇️ Tải tất cả kết quả (.zip)</button>${reEditHtml}` : ``}
+        ${err ? `<details class="log-expander" style="margin-top:12px;"><summary>❌ Chi tiết ${err} lỗi</summary>
+              <div style="padding:8px 12px;">${t.errors.map(e=>`<div class="err-row"><b>${e.name}:</b> ${e.reason}</div>`).join("")}</div>
+            </details>` : ``}
+      </div>`;
+  }
+
+  pane.innerHTML = guideHtml + uploadHtml + optionsHtml + runHtml + processingHtml + summaryHtml;
+
+  const prodUp = document.getElementById("prodUploader");
+  const prodIn = document.getElementById("prodInput");
+  const setProducts = (files)=>{ if(!files.length) return; t.products = files.map(f=>({file:f,url:URL.createObjectURL(f)})); render(); };
+  prodIn.onchange = (e)=> setProducts(Array.from(e.target.files||[]));
+  wireUploader(prodUp, prodIn, setProducts);
+
+  const patUp = document.getElementById("patUploader");
+  const patIn = document.getElementById("patInput");
+  const setPatterns = (files)=>{ if(!files.length) return; t.patterns = files.map(f=>({file:f,url:URL.createObjectURL(f)})); render(); };
+  patIn.onchange = (e)=> setPatterns(Array.from(e.target.files||[]));
+  wireUploader(patUp, patIn, setPatterns);
+
+  document.getElementById("placeFullCard").onclick = ()=>{ t.placement="full"; render(); };
+  document.getElementById("placeAreaCard").onclick = ()=>{ t.placement="area"; render(); };
+  document.getElementById("placeAutoCard").onclick = ()=>{ t.placement="auto"; render(); };
+  const areaTextInput = document.getElementById("areaTextInput");
+  if(areaTextInput) areaTextInput.oninput = (e)=>{ t.areaText = e.target.value; };
+
+  const intensitySlider = document.getElementById("intensitySlider");
+  if(intensitySlider) intensitySlider.oninput = (e)=>{
+    t.intensity = +e.target.value;
+    const val = document.getElementById("intensityVal");
+    if(val) val.textContent = t.intensity+"%";
+  };
+  const patExtraBox = document.getElementById("patExtraBox");
+  if(patExtraBox) patExtraBox.oninput = (e)=>{ t.extra = e.target.value; };
+
+  document.getElementById("runPatternBtn").onclick = ()=>{
+    if(t.running){ t.stopRequested = true; } else { processPatternBatch(); }
+  };
+  const zipBtnPattern = document.getElementById("zipBtnPattern");
+  if(zipBtnPattern) zipBtnPattern.onclick = ()=> downloadZip("tab3");
+
+  document.querySelectorAll(".resEditToggle").forEach(el=>{
+    el.onclick = (e)=>{ const i=+e.currentTarget.dataset.i; const r=t.results[i]; if(r){ r.editOpen=!r.editOpen; render(); } };
+  });
+  document.querySelectorAll(".resResetAdjust").forEach(el=>{
+    el.onclick = (e)=>{ const i=+e.currentTarget.dataset.i; const r=t.results[i]; if(r){ r.adjust={bri:100,sat:100,hue:0}; render(); } };
+  });
+  document.querySelectorAll(".resSelChk").forEach(el=>{
+    el.onchange = (e)=>{ const i=+e.target.dataset.i; const r=t.results[i]; if(r) r.selected = e.target.checked; };
+  });
+  document.querySelectorAll(".resSlider").forEach(el=>{
+    el.oninput = (e)=>{
+      const i = +e.target.dataset.i, key = e.target.dataset.key;
+      const r = t.results[i]; if(!r) return;
+      r.adjust[key] = +e.target.value;
+      const img = document.getElementById("resImg_"+i);
+      if(img) img.style.filter = cssFilterFor(r.adjust);
+      const valId = key==="bri" ? "valBri_"+i : key==="sat" ? "valSat_"+i : "valHue_"+i;
+      const valEl = document.getElementById(valId);
+      if(valEl) valEl.textContent = key==="hue" ? (r.adjust[key]+"°") : (r.adjust[key]+"%");
+    };
+  });
+
+  const reEditBox = document.getElementById("reEditBox");
+  if(reEditBox) reEditBox.oninput = (e)=>{ t.reEditPrompt = e.target.value; };
+  const reEditBtn = document.getElementById("reEditBtn");
+  if(reEditBtn) reEditBtn.onclick = ()=>{ if(!t.reEditRunning) reEditSelectedResults("tab3"); };
+}
+
+/* =========================================================================
+   RENDER: TAB 4 — CHAT VỚI AI (tạo ảnh từ mô tả, theo phong cách chat)
+========================================================================= */
+function renderChatItem(item){
+  if(item.role==="user"){
+    return `<div class="chat-bubble user">
+      ${item.refs && item.refs.length ? `<div class="thumbs" style="margin-bottom:6px;justify-content:flex-end;">${item.refs.map(r=>`<img src="${r.url}">`).join("")}</div>` : ``}
+      <div>${escapeHtml(item.text)}</div>
+    </div>`;
+  }
+  if(item.mode==="chat"){
+    if(item.pending){
+      return `<div class="chat-bubble ai" id="chatItem_${item.id}"><div class="chat-pending">⏳ AI đang trả lời...</div></div>`;
+    }
+    if(item.text){
+      return `<div class="chat-bubble ai" id="chatItem_${item.id}"><div style="white-space:pre-wrap;">${escapeHtml(item.text)}</div></div>`;
+    }
+    return `<div class="chat-bubble ai" id="chatItem_${item.id}"><div class="caption">😕 Không nhận được câu trả lời${item.errMsg ? `: ${escapeHtml(item.errMsg)}` : ", thử lại nhé."}</div></div>`;
+  }
+  if(item.pending){
+    return `<div class="chat-bubble ai" id="chatItem_${item.id}"><div class="chat-pending">⏳ AI đang tạo ${item.total} ảnh...</div></div>`;
+  }
+  return `<div class="chat-bubble ai" id="chatItem_${item.id}">
+    ${item.images.length ? `<div class="result-grid">${item.images.map(im=>`<img src="${im.url}" title="${im.name}">`).join("")}</div>`
+                          : `<div class="caption">😕 Không tạo được ảnh nào, thử lại hoặc mô tả rõ hơn nhé.</div>`}
+  </div>`;
+}
+
+function renderChatTab(pane){
+  const t = state.tab4;
+  const isImageMode = t.mode !== "chat";
+
+  const guideHtml = `
+    <details class="log-expander" style="margin-bottom:14px;">
+      <summary>📖 Hướng dẫn sử dụng (bấm để ẩn/hiện)</summary>
+      <div class="guide-box" style="border-radius:0 0 8px 8px;border-top:none;">
+        <b>Chat với AI:</b> chọn chế độ <b>🎨 Tạo ảnh</b> (mô tả ảnh muốn tạo, có thể đính kèm ảnh tham chiếu ở ô <b>"➕ Thêm"</b>) hoặc <b>💬 Trò chuyện</b> (hỏi đáp bình thường như Gemini, không sinh ảnh). Mỗi chế độ chỉ hiện các model AI phù hợp để tránh bị lỗi khi chọn nhầm. Ô đính kèm: <b>bấm 1 phát</b> để sẵn sàng dán ảnh từ clipboard (Ctrl+V), <b>nhấp đôi</b> để chọn ảnh trong máy, hoặc kéo thả thẳng vào ô.
+      </div>
+    </details>`;
+
+  const imageModelOptions = `
+    <option value="gemini-3.1-flash-image" ${t.model==='gemini-3.1-flash-image'?'selected':''}>💰 Nano Banana 2 — Khuyến nghị</option>
+    <option value="gemini-3.1-flash-lite-image" ${t.model==='gemini-3.1-flash-lite-image'?'selected':''}>💰 Nano Banana 2 Lite — nhanh & rẻ nhất</option>
+    <option value="gemini-3-pro-image" ${t.model==='gemini-3-pro-image'?'selected':''}>💰 Nano Banana Pro — chất lượng cao nhất</option>
+    <option value="gemini-2.5-flash-image" ${t.model==='gemini-2.5-flash-image'?'selected':''}>💰 Nano Banana gốc (2.5)</option>`;
+  const chatModelOptions = `
+    <option value="gemini-3.5-flash" ${t.model==='gemini-3.5-flash'?'selected':''}>🆓 Gemini 3.5 Flash — mới & mạnh nhất</option>
+    <option value="gemini-3.1-pro-preview" ${t.model==='gemini-3.1-pro-preview'?'selected':''}>💰 Gemini 3.1 Pro Preview — suy luận sâu nhất</option>
+    <option value="gemini-3-flash-preview" ${t.model==='gemini-3-flash-preview'?'selected':''}>🆓 Gemini 3 Flash Preview</option>
+    <option value="gemini-3.1-flash-lite" ${t.model==='gemini-3.1-flash-lite'?'selected':''}>🆓 Gemini 3.1 Flash-Lite — rẻ nhất dòng 3.x</option>
+    <option value="gemini-2.5-pro" ${t.model==='gemini-2.5-pro'?'selected':''}>🆓 Gemini 2.5 Pro</option>
+    <option value="gemini-2.5-flash" ${t.model==='gemini-2.5-flash'?'selected':''}>🆓 Gemini 2.5 Flash</option>
+    <option value="gemini-2.5-flash-lite" ${t.model==='gemini-2.5-flash-lite'?'selected':''}>🆓 Gemini 2.5 Flash-Lite — nhỏ gọn nhất</option>`;
+
+  const chatCardHtml = `
+    <div class="card chat-card">
+      <h4>💬 Chat với AI</h4>
+      <div class="mode-toggle" id="chatModeToggle" style="display:flex;gap:8px;margin-bottom:12px;">
+        <button type="button" class="mode-btn ${isImageMode?'active':''}" data-mode="image">🎨 Tạo ảnh</button>
+        <button type="button" class="mode-btn ${!isImageMode?'active':''}" data-mode="chat">💬 Trò chuyện thường</button>
+      </div>
+      <div class="chat-feed" id="chatFeed">
+        ${t.items.length ? t.items.map(renderChatItem).join("") : `<div class="empty-note">${isImageMode ? "Chưa có cuộc trò chuyện nào — nhập mô tả bên dưới để bắt đầu tạo ảnh." : "Chưa có cuộc trò chuyện nào — hỏi AI bất cứ điều gì, giống như đang chat với Gemini."}</div>`}
+      </div>
+      <div class="chat-composer">
+        <div class="chat-input-row">
+          <div class="uploader chat-attach ${t.refs.length?'has-file':''}" id="chatUploader">
+            <input type="file" accept="image/*" multiple id="chatInput" style="display:none;">
+            ${t.refs.length ? `<div class="count-badge">${t.refs.length}</div><div class="thumbs">${t.refs.map(r=>`<img src="${r.url}">`).join("")}</div>`
+                            : `<div class="icon">➕</div><div>Thêm</div>`}
+          </div>
+          <textarea class="promptbox chat-prompt" id="chatPromptBox" placeholder="${isImageMode ? 'Mô tả ảnh bạn muốn tạo...' : 'Nhắn gì đó cho AI... (có thể đính kèm ảnh để hỏi về nó)'}">${t.prompt}</textarea>
+        </div>
+        <div class="chat-toolbar">
+          <select class="chip-select model-select" id="chatModelSelect" title="Chọn model AI của Google">
+            ${isImageMode ? imageModelOptions : chatModelOptions}
+          </select>
+          ${isImageMode ? `
+          <select class="chip-select" id="chatAspectSelect" title="Tỉ lệ khung hình">
+            <option value="1:1" ${t.aspect==='1:1'?'selected':''}>▭ 1:1</option>
+            <option value="3:4" ${t.aspect==='3:4'?'selected':''}>▭ 3:4</option>
+            <option value="4:3" ${t.aspect==='4:3'?'selected':''}>▭ 4:3</option>
+            <option value="9:16" ${t.aspect==='9:16'?'selected':''}>▭ 9:16</option>
+            <option value="16:9" ${t.aspect==='16:9'?'selected':''}>▭ 16:9</option>
+          </select>
+          <div class="stepper">
+            <button type="button" id="chatCountMinus" ${t.count<=1?'disabled':''}>−</button>
+            <span id="chatCountLabel">${t.count}/4</span>
+            <button type="button" id="chatCountPlus" ${t.count>=4?'disabled':''}>+</button>
+          </div>
+          <select class="chip-select" id="chatResSelect" title="Độ phân giải">
+            <option value="1K" ${t.resolution==='1K'?'selected':''}>◇ 1K</option>
+            <option value="2K" ${t.resolution==='2K'?'selected':''}>◇ 2K</option>
+            <option value="4K" ${t.resolution==='4K'?'selected':''}>◇ 4K</option>
+          </select>` : ``}
+          <button class="primary-btn chat-generate-btn" id="chatGenerateBtn" ${t.running?'disabled':''}>
+            ${t.running ? (isImageMode ? '⏳ Đang tạo...' : '⏳ Đang trả lời...') : (isImageMode ? '✨ Tạo ảnh' : '➤ Gửi')}
+          </button>
+          ${FREE_TIER_MODELS.has(t.model) ? `<div class="model-note">🆓 Model này có gói <b>Free</b> (miễn phí, giới hạn số lượt/ngày). Dữ liệu chat có thể được Google dùng để cải thiện sản phẩm ở gói Free.</div>` : `<div class="model-note">💰 Model này không có gói Free — mọi lượt dùng đều tính phí theo API key.</div>`}
+        </div>
+        ${t.startError ? `<div class="error-box">${t.startError}</div>` : ``}
+      </div>
+      ${isImageMode && t.results.length ? `<button class="download-btn" id="zipBtnChat" style="margin-top:14px;">⬇️ Tải tất cả ảnh đã tạo (.zip)</button>` : ``}
+    </div>`;
+
+  pane.innerHTML = guideHtml + chatCardHtml;
+
+  const chatUp = document.getElementById("chatUploader");
+  const chatIn = document.getElementById("chatInput");
+  const setChatRefs = (files)=>{ if(!files.length) return; t.refs = files.map(f=>({file:f, url:URL.createObjectURL(f)})); render(); };
+  chatIn.onchange = (e)=> setChatRefs(Array.from(e.target.files||[]));
+  wireUploader(chatUp, chatIn, setChatRefs);
+
+  const promptBox = document.getElementById("chatPromptBox");
+  promptBox.oninput = (e)=>{ t.prompt = e.target.value; };
+  // cho phép dán ảnh thẳng vào ô mô tả (không ảnh hưởng dán/soạn văn bản bình thường)
+  promptBox.addEventListener("paste", (ev)=>{
+    const items = Array.from((ev.clipboardData && ev.clipboardData.items) || []);
+    const files = items.filter(it=> it.kind==="file" && it.type && it.type.startsWith("image/"))
+                        .map(it=> it.getAsFile()).filter(Boolean);
+    if(files.length){ ev.preventDefault(); setChatRefs(files); }
+  });
+
+  document.querySelectorAll("#chatModeToggle .mode-btn").forEach(btn=>{
+    btn.onclick = ()=>{
+      const newMode = btn.dataset.mode;
+      if(newMode === t.mode) return;
+      t.mode = newMode;
+      // khi đổi chế độ, tự chuyển sang model mặc định phù hợp nếu model hiện tại không hợp lệ với chế độ mới
+      if(newMode === "image" && !IMAGE_CAPABLE_MODELS.has(t.model)) t.model = "gemini-3.1-flash-image";
+      if(newMode === "chat" && IMAGE_CAPABLE_MODELS.has(t.model)) t.model = "gemini-3.5-flash";
+      render();
+    };
+  });
+  document.getElementById("chatModelSelect").onchange = (e)=>{ t.model = e.target.value; render(); };
+  const aspectSel = document.getElementById("chatAspectSelect");
+  if(aspectSel) aspectSel.onchange = (e)=>{ t.aspect = e.target.value; };
+  const resSel = document.getElementById("chatResSelect");
+  if(resSel) resSel.onchange = (e)=>{ t.resolution = e.target.value; };
+  const countMinus = document.getElementById("chatCountMinus");
+  if(countMinus) countMinus.onclick = ()=>{ if(t.count>1){ t.count--; document.getElementById("chatCountLabel").textContent = t.count+"/4"; render(); } };
+  const countPlus = document.getElementById("chatCountPlus");
+  if(countPlus) countPlus.onclick = ()=>{ if(t.count<4){ t.count++; document.getElementById("chatCountLabel").textContent = t.count+"/4"; render(); } };
+  document.getElementById("chatGenerateBtn").onclick = ()=>{ if(!t.running) processChatGenerate(); };
+  const zipBtnChat = document.getElementById("zipBtnChat");
+  if(zipBtnChat) zipBtnChat.onclick = ()=> downloadZip("tab4");
+
+  scrollChatFeedToBottom();
 }
 
 /* =========================================================================
@@ -999,24 +2354,24 @@ async function renderAdminTables(){
   const totalFilteredVnd = filtered.reduce((s,e)=>s+(e.cost_vnd||0),0);
 
   document.getElementById("adminTablesWrap").innerHTML = `
-    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;">
+    <div class="admin-grid" style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;">
       <div>
         <div class="small-label">📊 Chi phí theo từng người (trong khoảng đã chọn)</div>
-        <table class="data-table"><thead><tr><th>Người dùng</th><th>Số ảnh</th><th>Tổng (USD)</th><th>Tổng (VNĐ)</th></tr></thead>
-        <tbody>${userRows || `<tr><td colspan="4" class="empty-note">Chưa có dữ liệu</td></tr>`}</tbody></table>
+        <div class="table-scroll"><table class="data-table"><thead><tr><th>Người dùng</th><th>Số ảnh</th><th>Tổng (USD)</th><th>Tổng (VNĐ)</th></tr></thead>
+        <tbody>${userRows || `<tr><td colspan="4" class="empty-note">Chưa có dữ liệu</td></tr>`}</tbody></table></div>
       </div>
       <div>
         <div class="small-label">📅 Chi tiêu theo từng ngày (trong khoảng đã chọn)</div>
-        <table class="data-table"><thead><tr><th>Ngày</th><th>Số ảnh</th><th>Tổng (VNĐ)</th></tr></thead>
-        <tbody>${dayRows || `<tr><td colspan="3" class="empty-note">Chưa có dữ liệu</td></tr>`}</tbody></table>
+        <div class="table-scroll"><table class="data-table"><thead><tr><th>Ngày</th><th>Số ảnh</th><th>Tổng (VNĐ)</th></tr></thead>
+        <tbody>${dayRows || `<tr><td colspan="3" class="empty-note">Chưa có dữ liệu</td></tr>`}</tbody></table></div>
       </div>
     </div>
     <div class="statbox money" style="margin-top:12px;max-width:260px;"><div class="lbl">Tổng trong khoảng đã chọn</div><div class="val">${fmtVND(totalFilteredVnd)}</div></div>
   `;
 
   document.getElementById("adminLogDetail").innerHTML = `
-    <table class="data-table"><thead><tr><th>${LOG_FIELDS_VN.timestamp}</th><th>${LOG_FIELDS_VN.user}</th><th>${LOG_FIELDS_VN.model}</th><th>${LOG_FIELDS_VN.resolution}</th><th>${LOG_FIELDS_VN.status}</th><th>${LOG_FIELDS_VN.cost_usd}</th><th>${LOG_FIELDS_VN.cost_vnd}</th><th>${LOG_FIELDS_VN.cost_source}</th></tr></thead>
-    <tbody>${filtered.slice().reverse().map(e=>`<tr><td>${e.timestamp}</td><td>${e.user||'-'}</td><td>${e.model}</td><td>${e.resolution}</td><td>${e.status}</td><td>${fmtUSD(e.cost_usd)}</td><td>${fmtVND(e.cost_vnd)}</td><td>${e.cost_source}</td></tr>`).join("") || `<tr><td colspan="8" class="empty-note">Chưa có log</td></tr>`}</tbody></table>`;
+    <div class="table-scroll"><table class="data-table"><thead><tr><th>${LOG_FIELDS_VN.timestamp}</th><th>${LOG_FIELDS_VN.user}</th><th>${LOG_FIELDS_VN.model}</th><th>${LOG_FIELDS_VN.resolution}</th><th>${LOG_FIELDS_VN.status}</th><th>${LOG_FIELDS_VN.cost_usd}</th><th>${LOG_FIELDS_VN.cost_vnd}</th><th>${LOG_FIELDS_VN.cost_source}</th></tr></thead>
+    <tbody>${filtered.slice().reverse().map(e=>`<tr><td>${e.timestamp}</td><td>${e.user||'-'}</td><td>${e.model}</td><td>${e.resolution}</td><td>${e.status}</td><td>${fmtUSD(e.cost_usd)}</td><td>${fmtVND(e.cost_vnd)}</td><td>${e.cost_source}</td></tr>`).join("") || `<tr><td colspan="8" class="empty-note">Chưa có log</td></tr>`}</tbody></table></div>`;
 }
 
 async function downloadCsv(){
@@ -1099,6 +2454,22 @@ document.getElementById("checkSheetBtn").onclick = async ()=>{
   const r = await testRemoteWebhook();
   el.textContent = (r.ok ? "✅ " : "❌ ") + r.msg;
 };
+
+/* =========================================================================
+   MOBILE SIDEBAR DRAWER
+========================================================================= */
+const sidebarEl = document.getElementById("sidebar");
+const backdropEl = document.getElementById("sidebarBackdrop");
+function openSidebar(){ sidebarEl.classList.add("open"); backdropEl.classList.add("show"); }
+function closeSidebar(){ sidebarEl.classList.remove("open"); backdropEl.classList.remove("show"); }
+document.getElementById("menuToggle").onclick = openSidebar;
+document.getElementById("sidebarCloseBtn").onclick = closeSidebar;
+backdropEl.onclick = closeSidebar;
+// đóng drawer tự động sau khi bấm 1 hành động chính trên mobile (đỡ phải tự đóng tay)
+["saveKeyBtn","adminLoginBtn"].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener("click", ()=>{ if(window.innerWidth<=820) setTimeout(closeSidebar, 200); });
+});
 
 /* =========================================================================
    INIT
