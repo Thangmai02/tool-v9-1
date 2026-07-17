@@ -219,8 +219,14 @@
   .chat-attach{width:64px;height:64px;flex:none;border:1.5px dashed #b9c3e0;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10.5px;color:var(--muted2);background:#fff;overflow:hidden;position:relative;}
   .chat-attach.has-file{border-style:solid;border-color:var(--blue);}
   .chat-attach .icon{font-size:18px;line-height:1;}
-  .chat-attach .thumbs{margin-top:0;gap:2px;}
-  .chat-attach .thumbs img{width:20px;height:20px;}
+  .attach-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .attach-chip{position:relative;display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:4px 9px 4px 4px;font-size:11.5px;color:var(--text);max-width:190px;}
+  .attach-chip-img{padding:3px;}
+  .attach-chip img{width:38px;height:38px;object-fit:cover;border-radius:6px;flex:none;}
+  .attach-file-icon{font-size:17px;flex:none;}
+  .attach-file-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;}
+  .attach-remove{position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;border:2px solid #fff;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+  .attach-remove:hover{background:#a82a2a;}
   .chat-prompt{flex:1;min-height:64px;margin:0;}
   .chat-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;}
   .chip-select{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;}
@@ -276,10 +282,48 @@
     .chat-attach{width:100%;height:52px;flex-direction:row;}
     .chat-generate-btn{margin-left:0;width:100%;}
   }
+
+  /* ===== BRANCH GATE (chọn cơ sở trước khi vào app) ===== */
+  #branchGate{
+    position:fixed; inset:0; z-index:9999; display:none;
+    align-items:center; justify-content:center;
+    background:rgba(18,23,43,0.55);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    padding:20px;
+  }
+  #branchGate .gate-card{
+    background:#fff; border-radius:16px; padding:32px 28px; max-width:420px; width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35); text-align:center;
+  }
+  #branchGate .gate-card h2{margin:0 0 6px; font-size:19px; color:var(--text);}
+  #branchGate .gate-card .gate-sub{font-size:12.5px; color:var(--muted); margin-bottom:20px;}
+  #branchGateOptions{display:flex; flex-direction:column; gap:10px;}
+  .branch-opt-btn{
+    width:100%; padding:14px 12px; border-radius:10px; border:1.5px solid var(--line);
+    background:var(--bg); color:var(--text); font-size:14.5px; font-weight:700; cursor:pointer;
+  }
+  .branch-opt-btn:hover{border-color:var(--blue); background:#eaf1ff; color:var(--blue-d);}
+  .branch-gate-empty{font-size:12.5px; color:var(--muted);}
+  .branch-badge{
+    font-size:11px; font-weight:700; color:var(--blue-d); background:#eaf1ff; border:1px solid #cfe0ff;
+    border-radius:999px; padding:5px 12px; cursor:pointer; white-space:nowrap;
+  }
+  .branch-badge:hover{background:#dbe8ff;}
+  .branch-row{background:#fafbfd;}
 </style>
 </head>
 
 <body>
+
+<!-- ============ BRANCH GATE (chọn cơ sở) ============ -->
+<div id="branchGate">
+  <div class="gate-card">
+    <h2>🏢 Bạn là nhân sự cơ sở nào?</h2>
+    <div class="gate-sub">Chọn cơ sở của bạn để vào ứng dụng. Chi phí sử dụng sẽ được ghi nhận riêng theo từng cơ sở.</div>
+    <div id="branchGateOptions"></div>
+  </div>
+</div>
+
 <div id="app">
 
   <!-- ============ SIDEBAR ============ -->
@@ -291,6 +335,16 @@
       <button class="sb-btn" id="saveKeyBtn">💾 Lưu key</button>
       <div class="badge-row" id="apiKeyBadge"></div>
       <a class="sb-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Lấy API Key miễn phí →</a>
+    </div>
+    <div class="sb-divider"></div>
+
+    <div class="sb-block">
+      <div class="sb-title">💬 VietAPI Key (Trò chuyện thường)</div>
+      <input class="sb-input" id="vietApiKeyInput" type="password" placeholder="Dán VietAPI Key (sk-...)...">
+      <button class="sb-btn" id="saveVietKeyBtn">💾 Lưu key</button>
+      <div class="badge-row" id="vietApiKeyBadge"></div>
+      <a class="sb-link" href="https://vietapi.tech/dashboard.html" target="_blank" rel="noopener">Lấy VietAPI Key →</a>
+      <div class="sb-caption">Dùng riêng cho chế độ 💬 Trò chuyện thường trong tab "Chat với AI" (không sinh ảnh).</div>
     </div>
     <div class="sb-divider"></div>
 
@@ -367,12 +421,7 @@
         <div id="adminLoggedInView" style="display:none;margin-top:10px;">
           <span class="badge ok">● Đang xem với quyền quản trị</span>
           <button class="sb-btn secondary" id="adminLogoutBtn">Đăng xuất quản trị</button>
-          <div class="admin-caption">URL webhook hiện tại:</div>
-          <input class="sb-input" id="webhookInput" type="text" placeholder="URL Apps Script webhook (để trống = không đồng bộ)">
-          <div class="admin-caption">Link xem Google Sheet (tuỳ chọn):</div>
-          <input class="sb-input" id="sheetViewInput" type="text" placeholder="Link chia sẻ (chỉ xem) của Google Sheet">
-          <button class="sb-btn secondary" id="checkSheetBtn">🔧 Kiểm tra kết nối Google Sheet</button>
-          <div class="admin-caption" id="sheetCheckResult"></div>
+          <div class="admin-caption">Quản lý webhook, API Key và Google Sheet của từng cơ sở ở mục "🏢 Quản lý cơ sở" trong bảng Quản trị bên dưới nội dung chính.</div>
         </div>
       </details>
     </div>
@@ -385,7 +434,10 @@
         <button id="menuToggle" aria-label="Mở menu">☰</button>
         <div class="brand"><span class="ico">🪄</span> Photo Swap Studio <span class="sub">Thay trang phục &amp; đổi màu trang phục hàng loạt bằng AI</span></div>
       </div>
-      <div class="today">Hôm nay<b id="todayStat">$0.00 (0 ảnh)</b></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="branch-badge" id="branchSwitchBtn" title="Đổi cơ sở">🏢 <span id="branchNameLabel">—</span> · Đổi</button>
+        <div class="today">Hôm nay<b id="todayStat">$0.00 (0 ảnh)</b></div>
+      </div>
     </div>
     <div id="content"></div>
   </div>
@@ -451,6 +503,19 @@ const MAX_RETRIES = 4;
 const RETRY_BASE_DELAY_MS = 5000;
 const USD_TO_VND = 26000;
 
+// ── VietAPI.tech (https://vietapi.tech) — dùng cho chế độ 💬 Trò chuyện thường
+// (KHÔNG sinh ảnh) trong tab Chat với AI. OpenAI-compatible, key dạng sk-...
+const VIETAPI_BASE_URL = "https://api.vietapi.tech/v1/chat/completions";
+const VIETAPI_MODEL_LABELS = {
+  "gpt":"GPT (VietAPI)",
+  "claude-sonnet-5":"Claude Sonnet 5 (VietAPI)",
+  "opus":"Claude Opus 4.8 — KIRO (VietAPI)",
+  "kimi":"Kimi (VietAPI)",
+  "glm":"GLM (VietAPI)",
+  "v4pro":"DeepSeek V4 Pro (VietAPI)",
+  "v4flash":"DeepSeek V4 Flash (VietAPI)"
+};
+
 const SIZE_PRESETS = {
   "original": null,
   "9:16": [1080,1920],
@@ -477,8 +542,8 @@ const COLOR_PRESETS = [
 ];
 
 const DEFAULT_PROMPT_1 = "Thay áo trong ảnh thứ 2 vào người ở ảnh thứ 1, giữ nguyên dáng người, khuôn mặt và nền.";
-const DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwU8EfOeV_tmh7y-7jD85gjKJP_4vpxUI3pdyo8whzxBzc3Gx6ez77CwUijDex-PLoaMw/exec";
-const ADMIN_PASSWORD = "doimatkhaunay123";
+const DEFAULT_WEBHOOK_URL = "";
+const ADMIN_PASSWORD = "admin123";
 
 const LOG_FIELDS = ["timestamp","user","model","resolution","format","ref_image","status","prompt_tokens","output_tokens","cost_usd","cost_vnd","cost_source"];
 const LOG_FIELDS_VN = {
@@ -492,10 +557,11 @@ const NON_BILLABLE_STATUSES = new Set(["error"]);
    STATE
 ========================================================================= */
 const state = {
-  apiKey:"", userName:"",
+  apiKey:"", userName:"", vietApiKey:"",
+  branchId:"", branchName:"",
   model:"gemini-3.1-flash-image", resolution:"2K",
   exportFormat:"PNG", jpgQuality:92, exportSize:"original", customW:1024, customH:1024,
-  adminLoggedIn:false, webhookUrl:DEFAULT_WEBHOOK_URL, sheetViewUrl:"",
+  adminLoggedIn:false, webhookUrl:"", sheetViewUrl:"",
   remoteLastStatus:null, remoteLastError:"",
   activeTab:1,
   tab1:{source:null, refs:[], prompt:DEFAULT_PROMPT_1, running:false, stopRequested:false,
@@ -551,7 +617,7 @@ function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
    - bấm 1 phát: focus ô đó và bật sẵn sàng dán ảnh từ clipboard (Ctrl+V / Cmd+V)
    - nhấp đôi: mở hộp thoại chọn file trong máy (folder)
    - kéo thả file ảnh vào ô: vẫn hoạt động như cũ */
-function wireUploader(upEl, inEl, handleFiles){
+function wireUploader(upEl, inEl, handleFiles, allowAllFiles){
   if(!upEl) return;
   upEl.setAttribute("tabindex","0");
   let clickTimer = null;
@@ -573,7 +639,7 @@ function wireUploader(upEl, inEl, handleFiles){
   });
   upEl.addEventListener("paste", (ev)=>{
     const items = Array.from((ev.clipboardData && ev.clipboardData.items) || []);
-    const files = items.filter(it=> it.kind==="file" && it.type && it.type.startsWith("image/"))
+    const files = items.filter(it=> it.kind==="file" && (allowAllFiles || (it.type && it.type.startsWith("image/"))))
                         .map(it=> it.getAsFile()).filter(Boolean);
     if(files.length){ ev.preventDefault(); upEl.classList.remove("paste-ready"); handleFiles(files); }
   });
@@ -582,7 +648,7 @@ function wireUploader(upEl, inEl, handleFiles){
   upEl.addEventListener("drop", (ev)=>{
     ev.preventDefault();
     upEl.classList.remove("drag-over");
-    const files = Array.from((ev.dataTransfer && ev.dataTransfer.files) || []).filter(f=> f.type && f.type.startsWith("image/"));
+    const files = Array.from((ev.dataTransfer && ev.dataTransfer.files) || []).filter(f=> allowAllFiles || (f.type && f.type.startsWith("image/")));
     if(files.length) handleFiles(files);
   });
 }
@@ -739,13 +805,15 @@ async function finalizeImage(blob){
 const HAS_ARTIFACT_STORAGE = (typeof window.storage !== "undefined");
 const LOCAL_STORAGE_KEY = "photoSwapStudio_usageLog";
 
+function usageLogKey(){ return `usage:log:${state.branchId || "default"}`; }
+
 async function getUsageLog(){
   try{
     if(HAS_ARTIFACT_STORAGE){
-      const r = await window.storage.get("usage:log", true);
+      const r = await window.storage.get(usageLogKey(), true);
       return r ? JSON.parse(r.value) : [];
     }
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY+":"+(state.branchId||"default"));
     return raw ? JSON.parse(raw) : [];
   }catch(e){ return []; }
 }
@@ -754,11 +822,113 @@ async function appendUsageRow(row){
     const cur = await getUsageLog();
     cur.push(row);
     if(HAS_ARTIFACT_STORAGE){
-      await window.storage.set("usage:log", JSON.stringify(cur), true);
+      await window.storage.set(usageLogKey(), JSON.stringify(cur), true);
     } else {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cur));
+      localStorage.setItem(LOCAL_STORAGE_KEY+":"+(state.branchId||"default"), JSON.stringify(cur));
     }
   }catch(e){ console.error("storage error", e); }
+}
+
+/* =========================================================================
+   BRANCHES (Cơ sở) — mỗi cơ sở có webhook Google Sheet RIÊNG, và chính Sheet
+   đó lưu LUÔN cả API Key (Gemini + VietAPI) của cơ sở đó. KHÔNG có sheet/API
+   cấu hình trung tâm nào cả — mỗi cơ sở độc lập hoàn toàn.
+   Danh sách cơ sở (tên + webhook + link xem sheet) được lưu cục bộ
+   (window.storage khi ở khung preview Claude, hoặc localStorage của trình
+   duyệt khi chạy như file tĩnh).
+========================================================================= */
+const BRANCH_STORAGE_KEY = "config:branches";
+const LOCAL_BRANCH_KEY = "photoSwapStudio_branches";
+const DEFAULT_BRANCHES = [
+  {id:"v9", name:"V9", webhookUrl:DEFAULT_WEBHOOK_URL, sheetViewUrl:""},
+  {id:"v9-2", name:"V9.2", webhookUrl:"", sheetViewUrl:""}
+];
+let BRANCHES = [];
+
+async function loadBranches(){
+  try{
+    if(HAS_ARTIFACT_STORAGE){
+      const r = await window.storage.get(BRANCH_STORAGE_KEY, true);
+      if(r && r.value) return JSON.parse(r.value);
+    }
+    const raw = localStorage.getItem(LOCAL_BRANCH_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return DEFAULT_BRANCHES.map(b=>({...b}));
+}
+async function saveBranchesList(list){
+  BRANCHES = list;
+  try{ localStorage.setItem(LOCAL_BRANCH_KEY, JSON.stringify(list)); }catch(e){}
+  if(HAS_ARTIFACT_STORAGE){
+    try{ await window.storage.set(BRANCH_STORAGE_KEY, JSON.stringify(list), true); }catch(e){}
+  }
+}
+
+/* ============ API Key của TỪNG cơ sở — đọc/ghi thẳng vào webhook riêng của cơ sở đó ============ */
+async function fetchBranchApiConfig(webhookUrl){
+  if(!webhookUrl) return {apiKey:"", vietApiKey:""};
+  try{
+    const resp = await fetch(`${webhookUrl}?type=config`, {method:"GET"});
+    if(!resp.ok) return {apiKey:"", vietApiKey:""};
+    const data = await resp.json();
+    return {apiKey: data.apiKey||"", vietApiKey: data.vietApiKey||""};
+  }catch(e){
+    console.error("Không đọc được API key của cơ sở từ webhook riêng", e);
+    return {apiKey:"", vietApiKey:""};
+  }
+}
+async function saveBranchApiConfig(webhookUrl, apiKey, vietApiKey){
+  if(!webhookUrl) return {ok:false, msg:"Cơ sở này chưa có URL webhook Google Sheet — điền webhook rồi bấm 'Lưu cấu hình cơ sở' trước, sau đó mới lưu được API key."};
+  try{
+    await fetch(webhookUrl, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify({__action:"saveConfig", apiKey, vietApiKey})});
+  }catch(e){
+    return {ok:false, msg:"Gửi thất bại: "+e.message};
+  }
+  // mode:"no-cors" không đọc được phản hồi, nên đọc lại để xác minh có ghi thật không.
+  await sleep(1200);
+  try{
+    const check = await fetchBranchApiConfig(webhookUrl);
+    if((check.apiKey||"")===(apiKey||"") && (check.vietApiKey||"")===(vietApiKey||"")){
+      return {ok:true, msg:"Đã lưu và xác minh thành công trên Sheet của cơ sở này."};
+    }
+    return {ok:false, msg:"Đã gửi nhưng đọc lại KHÔNG khớp — kiểm tra đã Deploy phiên bản mới nhất của Apps Script cho cơ sở này chưa (Deploy → Manage deployments → New version)."};
+  }catch(e){
+    return {ok:false, msg:"Đã gửi nhưng lỗi khi xác minh lại: "+e.message};
+  }
+}
+
+function showBranchGate(){
+  const overlay = document.getElementById("branchGate");
+  const wrap = document.getElementById("branchGateOptions");
+  wrap.innerHTML = BRANCHES.length
+    ? BRANCHES.map(b=>`<button class="branch-opt-btn" data-id="${escapeHtml(b.id)}">${escapeHtml(b.name)}</button>`).join("")
+    : `<div class="branch-gate-empty">Chưa có cơ sở nào được cấu hình. Vui lòng liên hệ quản trị viên.</div>`;
+  wrap.querySelectorAll(".branch-opt-btn").forEach(btn=>{
+    btn.onclick = ()=> selectBranch(btn.dataset.id);
+  });
+  overlay.style.display = "flex";
+}
+async function selectBranch(id){
+  const b = BRANCHES.find(x=>x.id===id);
+  if(!b) return;
+  state.branchId = b.id;
+  state.branchName = b.name;
+  state.webhookUrl = b.webhookUrl || "";
+  state.sheetViewUrl = b.sheetViewUrl || "";
+  state.apiKey = ""; state.vietApiKey = "";
+  document.getElementById("branchNameLabel").textContent = b.name;
+  document.getElementById("branchGate").style.display = "none";
+  render();
+  refreshTodayStat();
+  // Lấy API key (Gemini + VietAPI) TRỰC TIẾP từ Sheet/webhook riêng của cơ sở này
+  const cfg = await fetchBranchApiConfig(state.webhookUrl);
+  state.apiKey = cfg.apiKey || "";
+  state.vietApiKey = cfg.vietApiKey || "";
+  const apiKeyInputEl = document.getElementById("apiKeyInput");
+  if(apiKeyInputEl) apiKeyInputEl.value = state.apiKey;
+  const vietApiKeyInputEl = document.getElementById("vietApiKeyInput");
+  if(vietApiKeyInputEl) vietApiKeyInputEl.value = state.vietApiKey;
+  renderSidebarStatus();
 }
 async function refreshTodayStat(){
   const log = adminRemoteLog || await getUsageLog();
@@ -798,15 +968,16 @@ async function sendRemoteLog(row){
     state.remoteLastStatus = "error"; state.remoteLastError = String(err.message||err);
   }
 }
-async function testRemoteWebhook(){
-  if(!state.webhookUrl) return {ok:false, msg:"Chưa cấu hình URL webhook."};
-  if(!state.webhookUrl.startsWith("http")){
+async function testRemoteWebhook(url){
+  const target = (url!==undefined) ? url : state.webhookUrl;
+  if(!target) return {ok:false, msg:"Chưa cấu hình URL webhook."};
+  if(!target.startsWith("http")){
     return {ok:false, msg:`Giá trị đang cấu hình không phải là URL hợp lệ. URL Web App của Apps Script phải bắt đầu bằng 'https://script.google.com/macros/s/.../exec'.`};
   }
   const testRow = {}; LOG_FIELDS.forEach(f=> testRow[f]="");
   Object.assign(testRow, {timestamp:nowStr(), user:"[TEST KẾT NỐI]", status:"test", cost_usd:0, cost_vnd:0});
   try{
-    await fetch(state.webhookUrl, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(testRow)});
+    await fetch(target, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(testRow)});
     return {ok:true, msg:"Đã gửi yêu cầu kiểm tra. Do trình duyệt chặn đọc phản hồi cross-origin (CORS), hãy mở Google Sheet để xác nhận có dòng '[TEST KẾT NỐI]' mới không."};
   }catch(e){
     return {ok:false, msg:"Không gửi được: "+e.message};
@@ -930,6 +1101,85 @@ async function callGeminiChatWithRetry(promptText, refFiles, modelId, resolution
     }
   }
   throw lastErr;
+}
+
+/* ============ VietAPI.tech (chế độ Trò chuyện thường, không sinh ảnh) ============ */
+const TEXT_FILE_EXT = new Set(["txt","md","csv","json","log","yml","yaml","js","ts","py","html","css","xml","ini","tsv"]);
+function isTextLikeFile(f){
+  if(f.type && (f.type.startsWith("text/") || f.type==="application/json")) return true;
+  const ext = (f.name.split(".").pop()||"").toLowerCase();
+  return TEXT_FILE_EXT.has(ext);
+}
+function readFileAsText(f){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=> res(r.result);
+    r.onerror = ()=> rej(new Error("Không đọc được nội dung file"));
+    r.readAsText(f);
+  });
+}
+async function callVietApiChatOnce(promptText, refFiles, modelId){
+  if(!state.vietApiKey) throw new Error("Chưa có VietAPI Key (nhập ở thanh bên trái, mục 'VietAPI Key').");
+  const files = refFiles || [];
+  const imageFiles = files.filter(f=> f.type && f.type.startsWith("image/"));
+  const textFiles = files.filter(f=> !(f.type && f.type.startsWith("image/")) && isTextLikeFile(f));
+  const otherFiles = files.filter(f=> !(f.type && f.type.startsWith("image/")) && !isTextLikeFile(f));
+
+  let fullText = promptText;
+  for(const f of textFiles){
+    try{
+      const txt = await readFileAsText(f);
+      fullText += `\n\n--- Nội dung file "${f.name}" ---\n${txt.slice(0,20000)}`;
+    }catch(e){ fullText += `\n\n(Không đọc được nội dung file "${f.name}")`; }
+  }
+  if(otherFiles.length){
+    fullText += `\n\n(Đã đính kèm ${otherFiles.length} file chưa hỗ trợ đọc nội dung tự động: ${otherFiles.map(f=>f.name).join(", ")})`;
+  }
+
+  let content;
+  if(imageFiles.length){
+    content = [{type:"text", text: fullText}];
+    for(const f of imageFiles){
+      const b64 = await fileToBase64(f);
+      const mime = f.type || "image/png";
+      content.push({type:"image_url", image_url:{url:`data:${mime};base64,${b64}`}});
+    }
+  } else {
+    content = fullText;
+  }
+  const body = { model: modelId, messages: [{role:"user", content}] };
+  const resp = await fetch(VIETAPI_BASE_URL, {
+    method:"POST",
+    headers:{"Content-Type":"application/json", "Authorization":`Bearer ${state.vietApiKey}`},
+    body: JSON.stringify(body)
+  });
+  if(!resp.ok){
+    const errText = await resp.text().catch(()=> "");
+    throw new Error(`VietAPI lỗi ${resp.status}: ${errText.slice(0,200)}`);
+  }
+  return await resp.json();
+}
+async function callVietApiChatWithRetry(promptText, refFiles, modelId, onRetryLog){
+  let lastErr;
+  for(let attempt=1; attempt<=MAX_RETRIES; attempt++){
+    try{ return await callVietApiChatOnce(promptText, refFiles, modelId); }
+    catch(e){
+      lastErr = e;
+      if(attempt===MAX_RETRIES) throw e;
+      onRetryLog(`⏳ thử lại lần ${attempt}/${MAX_RETRIES}...`);
+      await sleep(RETRY_BASE_DELAY_MS * Math.pow(2, attempt-1));
+    }
+  }
+  throw lastErr;
+}
+function extractVietApiText(resp){
+  try{
+    const msg = resp.choices && resp.choices[0] && resp.choices[0].message;
+    if(!msg) return null;
+    if(typeof msg.content === "string") return msg.content;
+    if(Array.isArray(msg.content)) return msg.content.map(c=>c.text||"").join("\n").trim() || null;
+    return null;
+  }catch(e){ return null; }
 }
 
 /* =========================================================================
@@ -1210,12 +1460,13 @@ async function processChatGenerate(){
   const t = state.tab4;
   const promptText = (t.prompt||"").trim();
   if(!promptText){ t.startError = "❌ Vui lòng nhập tin nhắn / mô tả."; render(); return; }
-  if(!state.apiKey){ t.startError = "❌ Cần API Key để dùng chat (nhập ở thanh bên trái rồi bấm 'Lưu key')."; render(); return; }
+  const mode = t.mode === "chat" ? "chat" : "image";
+  if(mode==="chat" && !state.vietApiKey){ t.startError = "❌ Cần VietAPI Key để trò chuyện (nhập ở thanh bên trái, mục 'VietAPI Key')."; render(); return; }
+  if(mode==="image" && !state.apiKey){ t.startError = "❌ Cần API Key để tạo ảnh (nhập ở thanh bên trái rồi bấm 'Lưu key')."; render(); return; }
   t.startError = null;
 
-  const mode = t.mode === "chat" ? "chat" : "image";
   const refFiles = t.refs.map(r=>r.file);
-  const refThumbs = t.refs.map(r=>({url:r.url}));
+  const refThumbs = t.refs.map(r=>({url:r.url, isImage:r.isImage, name:r.file.name}));
   const userItem = { role:"user", text: promptText, refs: refThumbs };
   const aiItemId = "chat_"+Date.now();
   const aiItem = mode==="chat"
@@ -1225,20 +1476,21 @@ async function processChatGenerate(){
   t.running = true;
   // dọn ô soạn thảo ngay để cảm giác giống chat thật
   t.prompt = ""; t.refs = [];
+  t._focusPrompt = true;
   render();
   scrollChatFeedToBottom();
 
-  const modelLabel = MODEL_OPTIONS_LABEL[t.model] || t.model;
+  const modelLabel = mode==="chat" ? (VIETAPI_MODEL_LABELS[t.model] || t.model) : (MODEL_OPTIONS_LABEL[t.model] || t.model);
   const resLabel = mode==="chat" ? "—" : (RES_LABEL[t.resolution] || t.resolution);
 
   if(mode==="chat"){
-    // Chế độ trò chuyện thường: 1 câu trả lời bằng chữ, không sinh ảnh
-    let logStatus, usageResult=null, response=null, replyText=null, errMsg=null;
+    // Chế độ trò chuyện thường: gọi VietAPI.tech, 1 câu trả lời bằng chữ, không sinh ảnh
+    let logStatus, response=null, replyText=null, errMsg=null, usage=null;
     try{
-      response = await callGeminiChatWithRetry(promptText, refFiles, t.model, null, null, "chat", ()=>{});
-      replyText = extractTextPart(response);
+      response = await callVietApiChatWithRetry(promptText, refFiles, t.model, ()=>{});
+      replyText = extractVietApiText(response);
       logStatus = replyText ? "success" : "no_text";
-      usageResult = computeCostFromUsage(t.model, response && response.usageMetadata);
+      usage = response && response.usage;
     }catch(err){
       logStatus = "error";
       errMsg = err && err.message ? err.message : "Lỗi không xác định";
@@ -1250,18 +1502,16 @@ async function processChatGenerate(){
     render();
     scrollChatFeedToBottom();
 
-    let costUsd, pTokens, oTokens, costSource;
-    if(usageResult){
-      costUsd=usageResult.costUsd; pTokens=usageResult.promptTokens; oTokens=usageResult.outputTokens; costSource="token thật";
-    } else {
-      costUsd = 0; pTokens=""; oTokens=""; costSource = FREE_TIER_MODELS.has(t.model) ? "miễn phí (gói Free)" : "ước tính (không lấy được token thật)";
-    }
-    if(NON_BILLABLE_STATUSES.has(logStatus)){ costUsd=0; costSource="không tính phí (lỗi)"; }
+    const pTokens = usage ? (usage.prompt_tokens ?? "") : "";
+    const oTokens = usage ? (usage.completion_tokens ?? "") : "";
+    let costUsd = 0;
+    let costSource = "VietAPI (theo gói/quota, không tính phí per-token qua app)";
+    if(NON_BILLABLE_STATUSES.has(logStatus)){ costSource="không tính phí (lỗi)"; }
 
     const row = {
       timestamp: nowStr(), user: state.userName || "Không rõ",
       model: modelLabel, resolution: resLabel,
-      format: "-", ref_image: `Chat (trò chuyện): "${promptText.slice(0,60)}"`, status: logStatus,
+      format: "-", ref_image: `Chat (trò chuyện qua VietAPI): "${promptText.slice(0,60)}"`, status: logStatus,
       prompt_tokens: pTokens, output_tokens: oTokens,
       cost_usd: Math.round(costUsd*10000)/10000, cost_vnd: Math.round(costUsd*USD_TO_VND), cost_source: costSource
     };
@@ -1429,6 +1679,9 @@ function renderSidebarStatus(){
   document.getElementById("apiKeyBadge").innerHTML = state.apiKey
     ? `<span class="badge ok">● Đã kết nối</span>`
     : `<span class="badge warn">● Chưa có API key</span>`;
+  document.getElementById("vietApiKeyBadge").innerHTML = state.vietApiKey
+    ? `<span class="badge ok">● Đã kết nối</span>`
+    : `<span class="badge warn">● Chưa có VietAPI key</span>`;
   document.getElementById("userBadge").innerHTML = state.userName
     ? "" : `<span class="badge warn">● Nhập tên để ghi nhận chi phí</span>`;
 }
@@ -2088,7 +2341,10 @@ function renderPatternTab(pane){
 function renderChatItem(item){
   if(item.role==="user"){
     return `<div class="chat-bubble user">
-      ${item.refs && item.refs.length ? `<div class="thumbs" style="margin-bottom:6px;justify-content:flex-end;">${item.refs.map(r=>`<img src="${r.url}">`).join("")}</div>` : ``}
+      ${item.refs && item.refs.length ? `<div class="attach-row" style="margin-bottom:6px;justify-content:flex-end;">${item.refs.map(r=> r.isImage
+          ? `<div class="attach-chip attach-chip-img"><img src="${r.url}"></div>`
+          : `<div class="attach-chip attach-chip-file"><span class="attach-file-icon">📄</span><span class="attach-file-name" title="${escapeHtml(r.name||'')}">${escapeHtml(r.name||'')}</span></div>`
+        ).join("")}</div>` : ``}
       <div>${escapeHtml(item.text)}</div>
     </div>`;
   }
@@ -2118,7 +2374,7 @@ function renderChatTab(pane){
     <details class="log-expander" style="margin-bottom:14px;">
       <summary>📖 Hướng dẫn sử dụng (bấm để ẩn/hiện)</summary>
       <div class="guide-box" style="border-radius:0 0 8px 8px;border-top:none;">
-        <b>Chat với AI:</b> chọn chế độ <b>🎨 Tạo ảnh</b> (mô tả ảnh muốn tạo, có thể đính kèm ảnh tham chiếu ở ô <b>"➕ Thêm"</b>) hoặc <b>💬 Trò chuyện</b> (hỏi đáp bình thường như Gemini, không sinh ảnh). Mỗi chế độ chỉ hiện các model AI phù hợp để tránh bị lỗi khi chọn nhầm. Ô đính kèm: <b>bấm 1 phát</b> để sẵn sàng dán ảnh từ clipboard (Ctrl+V), <b>nhấp đôi</b> để chọn ảnh trong máy, hoặc kéo thả thẳng vào ô.
+        <b>Chat với AI:</b> chọn chế độ <b>🎨 Tạo ảnh</b> (dùng Gemini, mô tả ảnh muốn tạo, có thể đính kèm ảnh tham chiếu ở ô <b>"➕ Thêm"</b>) hoặc <b>💬 Trò chuyện</b> (dùng <b>VietAPI.tech</b>, hỏi đáp bình thường, không sinh ảnh — cần VietAPI Key riêng ở thanh bên trái). Mỗi chế độ chỉ hiện các model AI phù hợp để tránh bị lỗi khi chọn nhầm. Ô đính kèm: <b>bấm 1 phát</b> để sẵn sàng dán ảnh từ clipboard (Ctrl+V), <b>nhấp đôi</b> để chọn ảnh trong máy, hoặc kéo thả thẳng vào ô.
       </div>
     </details>`;
 
@@ -2127,14 +2383,9 @@ function renderChatTab(pane){
     <option value="gemini-3.1-flash-lite-image" ${t.model==='gemini-3.1-flash-lite-image'?'selected':''}>💰 Nano Banana 2 Lite — nhanh & rẻ nhất</option>
     <option value="gemini-3-pro-image" ${t.model==='gemini-3-pro-image'?'selected':''}>💰 Nano Banana Pro — chất lượng cao nhất</option>
     <option value="gemini-2.5-flash-image" ${t.model==='gemini-2.5-flash-image'?'selected':''}>💰 Nano Banana gốc (2.5)</option>`;
-  const chatModelOptions = `
-    <option value="gemini-3.5-flash" ${t.model==='gemini-3.5-flash'?'selected':''}>🆓 Gemini 3.5 Flash — mới & mạnh nhất</option>
-    <option value="gemini-3.1-pro-preview" ${t.model==='gemini-3.1-pro-preview'?'selected':''}>💰 Gemini 3.1 Pro Preview — suy luận sâu nhất</option>
-    <option value="gemini-3-flash-preview" ${t.model==='gemini-3-flash-preview'?'selected':''}>🆓 Gemini 3 Flash Preview</option>
-    <option value="gemini-3.1-flash-lite" ${t.model==='gemini-3.1-flash-lite'?'selected':''}>🆓 Gemini 3.1 Flash-Lite — rẻ nhất dòng 3.x</option>
-    <option value="gemini-2.5-pro" ${t.model==='gemini-2.5-pro'?'selected':''}>🆓 Gemini 2.5 Pro</option>
-    <option value="gemini-2.5-flash" ${t.model==='gemini-2.5-flash'?'selected':''}>🆓 Gemini 2.5 Flash</option>
-    <option value="gemini-2.5-flash-lite" ${t.model==='gemini-2.5-flash-lite'?'selected':''}>🆓 Gemini 2.5 Flash-Lite — nhỏ gọn nhất</option>`;
+  const chatModelOptions = Object.keys(VIETAPI_MODEL_LABELS).map(id=>
+    `<option value="${id}" ${t.model===id?'selected':''}>💬 ${VIETAPI_MODEL_LABELS[id]}</option>`
+  ).join("");
 
   const chatCardHtml = `
     <div class="card chat-card">
@@ -2147,16 +2398,21 @@ function renderChatTab(pane){
         ${t.items.length ? t.items.map(renderChatItem).join("") : `<div class="empty-note">${isImageMode ? "Chưa có cuộc trò chuyện nào — nhập mô tả bên dưới để bắt đầu tạo ảnh." : "Chưa có cuộc trò chuyện nào — hỏi AI bất cứ điều gì, giống như đang chat với Gemini."}</div>`}
       </div>
       <div class="chat-composer">
+        ${t.refs.length ? `<div class="attach-row" id="attachRow">
+          ${t.refs.map((r,i)=> r.isImage
+            ? `<div class="attach-chip attach-chip-img"><img src="${r.url}"><button type="button" class="attach-remove" data-i="${i}">✕</button></div>`
+            : `<div class="attach-chip attach-chip-file"><span class="attach-file-icon">📄</span><span class="attach-file-name" title="${escapeHtml(r.file.name)}">${escapeHtml(r.file.name)}</span><button type="button" class="attach-remove" data-i="${i}">✕</button></div>`
+          ).join("")}
+        </div>` : ``}
         <div class="chat-input-row">
-          <div class="uploader chat-attach ${t.refs.length?'has-file':''}" id="chatUploader">
-            <input type="file" accept="image/*" multiple id="chatInput" style="display:none;">
-            ${t.refs.length ? `<div class="count-badge">${t.refs.length}</div><div class="thumbs">${t.refs.map(r=>`<img src="${r.url}">`).join("")}</div>`
-                            : `<div class="icon">➕</div><div>Thêm</div>`}
+          <div class="uploader chat-attach ${t.refs.length?'has-file':''}" id="chatUploader" title="Đính kèm tệp">
+            <input type="file" accept="${isImageMode ? 'image/*' : 'image/*,.pdf,.doc,.docx,.txt,.csv,.md,.json,.xlsx,.log'}" multiple id="chatInput" style="display:none;">
+            <div class="icon">➕</div><div>Thêm</div>
           </div>
-          <textarea class="promptbox chat-prompt" id="chatPromptBox" placeholder="${isImageMode ? 'Mô tả ảnh bạn muốn tạo...' : 'Nhắn gì đó cho AI... (có thể đính kèm ảnh để hỏi về nó)'}">${t.prompt}</textarea>
+          <textarea class="promptbox chat-prompt" id="chatPromptBox" placeholder="${isImageMode ? 'Mô tả ảnh bạn muốn tạo...' : 'Nhắn gì đó cho AI... (Enter để gửi, Shift+Enter xuống dòng)'}">${t.prompt}</textarea>
         </div>
         <div class="chat-toolbar">
-          <select class="chip-select model-select" id="chatModelSelect" title="Chọn model AI của Google">
+          <select class="chip-select model-select" id="chatModelSelect" title="${isImageMode ? 'Chọn model AI của Google' : 'Chọn model AI của VietAPI'}">
             ${isImageMode ? imageModelOptions : chatModelOptions}
           </select>
           ${isImageMode ? `
@@ -2180,7 +2436,9 @@ function renderChatTab(pane){
           <button class="primary-btn chat-generate-btn" id="chatGenerateBtn" ${t.running?'disabled':''}>
             ${t.running ? (isImageMode ? '⏳ Đang tạo...' : '⏳ Đang trả lời...') : (isImageMode ? '✨ Tạo ảnh' : '➤ Gửi')}
           </button>
-          ${FREE_TIER_MODELS.has(t.model) ? `<div class="model-note">🆓 Model này có gói <b>Free</b> (miễn phí, giới hạn số lượt/ngày). Dữ liệu chat có thể được Google dùng để cải thiện sản phẩm ở gói Free.</div>` : `<div class="model-note">💰 Model này không có gói Free — mọi lượt dùng đều tính phí theo API key.</div>`}
+          ${isImageMode
+            ? (FREE_TIER_MODELS.has(t.model) ? `<div class="model-note">🆓 Model này có gói <b>Free</b> (miễn phí, giới hạn số lượt/ngày). Dữ liệu chat có thể được Google dùng để cải thiện sản phẩm ở gói Free.</div>` : `<div class="model-note">💰 Model này không có gói Free — mọi lượt dùng đều tính phí theo API key.</div>`)
+            : `<div class="model-note">💬 Trả lời qua <b>VietAPI.tech</b> — dùng VietAPI Key riêng (nhập ở thanh bên trái), tính theo quota/gói thuê bao của VietAPI, không tính phí qua Gemini API key.</div>`}
         </div>
         ${t.startError ? `<div class="error-box">${t.startError}</div>` : ``}
       </div>
@@ -2191,9 +2449,22 @@ function renderChatTab(pane){
 
   const chatUp = document.getElementById("chatUploader");
   const chatIn = document.getElementById("chatInput");
-  const setChatRefs = (files)=>{ if(!files.length) return; t.refs = files.map(f=>({file:f, url:URL.createObjectURL(f)})); render(); };
-  chatIn.onchange = (e)=> setChatRefs(Array.from(e.target.files||[]));
-  wireUploader(chatUp, chatIn, setChatRefs);
+  const setChatRefs = (files)=>{
+    if(!files.length) return;
+    const mapped = files.map(f=>({file:f, url:URL.createObjectURL(f), isImage: !!(f.type && f.type.startsWith("image/"))}));
+    t.refs = t.refs.concat(mapped);
+    render();
+  };
+  chatIn.onchange = (e)=>{ setChatRefs(Array.from(e.target.files||[])); e.target.value=""; };
+  wireUploader(chatUp, chatIn, setChatRefs, !isImageMode);
+  document.querySelectorAll("#attachRow .attach-remove").forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      const i = +btn.dataset.i;
+      if(t.refs[i]){ try{ URL.revokeObjectURL(t.refs[i].url); }catch(err){} t.refs.splice(i,1); }
+      render();
+    };
+  });
 
   const promptBox = document.getElementById("chatPromptBox");
   promptBox.oninput = (e)=>{ t.prompt = e.target.value; };
@@ -2204,6 +2475,20 @@ function renderChatTab(pane){
                         .map(it=> it.getAsFile()).filter(Boolean);
     if(files.length){ ev.preventDefault(); setChatRefs(files); }
   });
+  // Enter để gửi (giống chatbot bình thường), Shift+Enter để xuống dòng
+  promptBox.addEventListener("keydown", (ev)=>{
+    if(ev.key === "Enter" && !ev.shiftKey && !ev.isComposing){
+      ev.preventDefault();
+      if(!t.running && (t.prompt||"").trim()) processChatGenerate();
+    }
+  });
+  // focus lại ô soạn thảo + đưa con trỏ về cuối sau mỗi lần render (giữ trải nghiệm gõ liên tục)
+  if(t._focusPrompt){
+    promptBox.focus();
+    const len = promptBox.value.length;
+    promptBox.setSelectionRange(len, len);
+    t._focusPrompt = false;
+  }
 
   document.querySelectorAll("#chatModeToggle .mode-btn").forEach(btn=>{
     btn.onclick = ()=>{
@@ -2212,7 +2497,7 @@ function renderChatTab(pane){
       t.mode = newMode;
       // khi đổi chế độ, tự chuyển sang model mặc định phù hợp nếu model hiện tại không hợp lệ với chế độ mới
       if(newMode === "image" && !IMAGE_CAPABLE_MODELS.has(t.model)) t.model = "gemini-3.1-flash-image";
-      if(newMode === "chat" && IMAGE_CAPABLE_MODELS.has(t.model)) t.model = "gemini-3.5-flash";
+      if(newMode === "chat" && !VIETAPI_MODEL_LABELS[t.model]) t.model = "gpt";
       render();
     };
   });
@@ -2236,6 +2521,7 @@ function renderChatTab(pane){
    RENDER: ADMIN SECTION — mirrors "Lịch sử sử dụng & thanh toán"
 ========================================================================= */
 let adminDateFilter = {mode:"all", from:null, to:null};
+let branchDraft = [];
 
 function renderAdminSection(){
   const pane = document.getElementById("adminPane");
@@ -2245,11 +2531,11 @@ function renderAdminSection(){
   pane.innerHTML = `
     <div class="card admin-section">
       <div class="admin-header">
-        <h3>💳 Lịch sử sử dụng & thanh toán</h3>
-        <span class="badge ${state.webhookUrl?'ok':'warn'}">${state.webhookUrl?'☁️ Đang gửi log lên Google Sheet trung tâm':'⚠️ Chưa đồng bộ trung tâm — log chỉ lưu trên máy này'}</span>
+        <h3>💳 Lịch sử sử dụng & thanh toán — cơ sở <span style="color:var(--blue-d);">${escapeHtml(state.branchName||"—")}</span></h3>
+        <span class="badge ${state.webhookUrl?'ok':'warn'}">${state.webhookUrl?'☁️ Đang gửi log lên Google Sheet của cơ sở này':'⚠️ Cơ sở này chưa có webhook — log chỉ lưu trên máy này'}</span>
       </div>
-      <div class="caption">App dùng chung 1 API Key nên phần này ghi nhận theo <b>tên bạn tự nhập</b> ở thanh bên trái, không phải đăng nhập thật — mọi người cần tự giác nhập đúng tên để số liệu chính xác.</div>
-      ${state.webhookUrl && state.sheetViewUrl ? `<a class="link-btn" href="${state.sheetViewUrl}" target="_blank" rel="noopener" style="margin-top:10px;">📄 Mở Google Sheet tổng hợp (tất cả các máy)</a>` : ``}
+      <div class="caption">Mỗi cơ sở dùng 1 API Key và 1 Google Sheet riêng. Phần này chỉ hiển thị log của cơ sở <b>${escapeHtml(state.branchName||"—")}</b> mà bạn đang chọn, ghi nhận theo <b>tên bạn tự nhập</b> ở thanh bên trái.</div>
+      ${state.webhookUrl && state.sheetViewUrl ? `<a class="link-btn" href="${state.sheetViewUrl}" target="_blank" rel="noopener" style="margin-top:10px;">📄 Mở Google Sheet của cơ sở ${escapeHtml(state.branchName||"")}</a>` : ``}
       <div class="caption" style="margin-top:8px;">${storageNote}
         ${state.remoteLastStatus==="ok" ? `<br>✅ Lần gửi log gần nhất trong phiên này: thành công.` : ``}
         ${state.remoteLastStatus==="error" ? `<br>❌ Lần gửi log gần nhất BỊ LỖI: ${state.remoteLastError}` : ``}
@@ -2274,6 +2560,17 @@ function renderAdminSection(){
         <div id="adminLogDetail" style="padding:6px 12px;max-height:260px;overflow:auto;"></div>
       </details>
       <button class="link-btn" id="downloadCsvBtn" style="margin-top:12px;">⬇️ Tải toàn bộ file log (.csv, cột tiếng Việt)</button>
+    </div>
+
+    <div class="card admin-section" style="margin-top:16px;">
+      <div class="admin-header"><h3>🏢 Quản lý cơ sở</h3></div>
+      <div class="caption">Mỗi cơ sở có Sheet/webhook riêng — Sheet đó vừa ghi log chi phí, vừa lưu luôn API Key (Gemini + VietAPI) của chính cơ sở đó. <b>Không dùng chung Sheet trung tâm nào cả.</b> Điền webhook trước, sau đó API Key sẽ lưu/đọc trực tiếp trên Sheet của cơ sở tương ứng.</div>
+      <div id="branchManageWrap" style="margin-top:6px;"></div>
+      <div style="margin-top:10px;">
+        <button class="sb-btn secondary" id="addBranchBtn" style="width:auto;display:inline-block;padding:8px 14px;">+ Thêm cơ sở</button>
+        <button class="sb-btn" id="saveBranchesBtn" style="width:auto;display:inline-block;padding:8px 14px;margin-left:8px;">💾 Lưu danh sách cơ sở (tên / webhook / link sheet)</button>
+      </div>
+      <div class="admin-caption" id="branchSaveResult" style="margin-top:8px;"></div>
     </div>`;
 
   document.querySelectorAll(".filter-btn").forEach(b=>{
@@ -2298,7 +2595,100 @@ function renderAdminSection(){
   const clearBtn = document.getElementById("clearSyncBtn");
   if(clearBtn) clearBtn.onclick = ()=>{ adminRemoteLog = null; renderAdminSection(); };
 
+  branchDraft = BRANCHES.map(b=>({...b}));
+  renderBranchManage();
+  document.getElementById("addBranchBtn").onclick = ()=>{
+    branchDraft.push({id:"cs"+Date.now(), name:"Cơ sở mới", webhookUrl:"", sheetViewUrl:""});
+    renderBranchManage();
+  };
+  document.getElementById("saveBranchesBtn").onclick = async ()=>{
+    const el = document.getElementById("branchSaveResult");
+    el.textContent = "Đang lưu...";
+    const cleaned = branchDraft.map(b=>({id:b.id, name:(b.name||"").trim()||"Cơ sở", webhookUrl:(b.webhookUrl||"").trim(), sheetViewUrl:(b.sheetViewUrl||"").trim()}));
+    await saveBranchesList(cleaned);
+    const cur = BRANCHES.find(b=>b.id===state.branchId);
+    if(cur){
+      state.webhookUrl = cur.webhookUrl||""; state.sheetViewUrl = cur.sheetViewUrl||"";
+      const lbl = document.getElementById("branchNameLabel"); if(lbl) lbl.textContent = cur.name;
+      state.branchName = cur.name;
+    } else {
+      state.webhookUrl = ""; state.sheetViewUrl = "";
+    }
+    el.textContent = "✅ Đã lưu danh sách cơ sở trên máy này.";
+    renderAdminSection();
+    render();
+  };
+
   renderAdminTables();
+}
+
+function renderBranchManage(){
+  const wrap = document.getElementById("branchManageWrap");
+  if(!wrap) return;
+  wrap.innerHTML = branchDraft.length ? branchDraft.map((b,i)=>`
+    <div class="branch-row" data-i="${i}" style="border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:10px;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="field branch-name" data-i="${i}" placeholder="Tên cơ sở (VD: V9)" value="${escapeHtml(b.name)}" style="flex:1;font-weight:700;">
+        <button class="filter-btn del-branch-btn" data-i="${i}" style="color:var(--red);white-space:nowrap;">🗑️ Xoá</button>
+      </div>
+      <div class="admin-caption" style="margin-top:8px;">URL webhook Google Sheet (Apps Script /exec) — Sheet riêng của cơ sở này:</div>
+      <input class="field branch-webhook" data-i="${i}" placeholder="https://script.google.com/macros/s/.../exec" value="${escapeHtml(b.webhookUrl||'')}" style="width:100%;">
+      <div class="admin-caption" style="margin-top:8px;">Link xem Google Sheet (tuỳ chọn, chia sẻ chỉ xem):</div>
+      <input class="field branch-sheetview" data-i="${i}" placeholder="https://docs.google.com/spreadsheets/..." value="${escapeHtml(b.sheetViewUrl||'')}" style="width:100%;">
+      <button class="link-btn test-branch-btn" data-i="${i}" style="margin-top:8px;">🔧 Kiểm tra webhook</button>
+      <span class="admin-caption test-branch-result" data-i="${i}"></span>
+
+      <div class="admin-caption" style="margin-top:14px;padding-top:10px;border-top:1px dashed var(--line);">🔑 API Key CỦA CƠ SỞ NÀY — lưu trực tiếp lên chính Sheet ở webhook trên (không qua sheet trung tâm nào):</div>
+      <input class="field branch-apikey-live" data-i="${i}" type="password" placeholder="${b.webhookUrl ? 'Đang tải...' : 'Điền webhook rồi lưu trước đã'}" style="width:100%;margin-top:6px;">
+      <input class="field branch-vietapikey-live" data-i="${i}" type="password" placeholder="${b.webhookUrl ? 'Đang tải VietAPI Key...' : 'Điền webhook rồi lưu trước đã'}" style="width:100%;margin-top:6px;">
+      <button class="sb-btn secondary save-branch-api-btn" data-i="${i}" style="width:auto;display:inline-block;padding:6px 12px;margin-top:8px;">💾 Lưu API cho cơ sở này</button>
+      <div class="admin-caption save-branch-api-result" data-i="${i}" style="margin-top:6px;"></div>
+    </div>
+  `).join("") : `<div class="caption">Chưa có cơ sở nào. Bấm "+ Thêm cơ sở" để tạo mới.</div>`;
+
+  wrap.querySelectorAll(".branch-name").forEach(el=> el.oninput = e=>{ branchDraft[+e.target.dataset.i].name = e.target.value; });
+  wrap.querySelectorAll(".branch-webhook").forEach(el=> el.oninput = e=>{ branchDraft[+e.target.dataset.i].webhookUrl = e.target.value.trim(); });
+  wrap.querySelectorAll(".branch-sheetview").forEach(el=> el.oninput = e=>{ branchDraft[+e.target.dataset.i].sheetViewUrl = e.target.value.trim(); });
+  wrap.querySelectorAll(".del-branch-btn").forEach(el=> el.onclick = e=>{
+    const i = +e.currentTarget.dataset.i;
+    if(!confirm(`Xoá cơ sở "${branchDraft[i].name}"? Sheet/log của cơ sở này không bị xoá, chỉ ẩn khỏi màn hình chọn cơ sở.`)) return;
+    branchDraft.splice(i,1);
+    renderBranchManage();
+  });
+  wrap.querySelectorAll(".test-branch-btn").forEach(el=> el.onclick = async e=>{
+    const i = +e.currentTarget.dataset.i;
+    const resEl = wrap.querySelector(`.test-branch-result[data-i="${i}"]`);
+    resEl.textContent = " Đang kiểm tra...";
+    const r = await testRemoteWebhook(branchDraft[i].webhookUrl);
+    resEl.textContent = " " + (r.ok?"✅ ":"❌ ") + r.msg;
+  });
+  wrap.querySelectorAll(".save-branch-api-btn").forEach(el=> el.onclick = async e=>{
+    const i = +e.currentTarget.dataset.i;
+    const b = branchDraft[i];
+    const resEl = wrap.querySelector(`.save-branch-api-result[data-i="${i}"]`);
+    const apiKeyVal = wrap.querySelector(`.branch-apikey-live[data-i="${i}"]`).value.trim();
+    const vietKeyVal = wrap.querySelector(`.branch-vietapikey-live[data-i="${i}"]`).value.trim();
+    if(!b.webhookUrl){ resEl.textContent = "❌ Cơ sở này chưa có webhook — điền webhook rồi bấm 'Lưu danh sách cơ sở' trước."; return; }
+    resEl.textContent = "Đang lưu & xác minh...";
+    const r = await saveBranchApiConfig(b.webhookUrl, apiKeyVal, vietKeyVal);
+    resEl.textContent = (r.ok?"✅ ":"❌ ") + r.msg;
+    if(state.branchId === b.id){
+      state.apiKey = apiKeyVal; state.vietApiKey = vietKeyVal;
+      const ak = document.getElementById("apiKeyInput"); if(ak) ak.value = apiKeyVal;
+      const vk = document.getElementById("vietApiKeyInput"); if(vk) vk.value = vietKeyVal;
+    }
+  });
+
+  // Tải sẵn API key hiện có của từng cơ sở (đọc trực tiếp từ webhook riêng của cơ sở đó)
+  branchDraft.forEach((b,i)=>{
+    if(!b.webhookUrl) return;
+    fetchBranchApiConfig(b.webhookUrl).then(cfg=>{
+      const akEl = wrap.querySelector(`.branch-apikey-live[data-i="${i}"]`);
+      const vkEl = wrap.querySelector(`.branch-vietapikey-live[data-i="${i}"]`);
+      if(akEl && document.activeElement !== akEl){ akEl.value = cfg.apiKey || ""; akEl.placeholder = "Dán API key..."; }
+      if(vkEl && document.activeElement !== vkEl){ vkEl.value = cfg.vietApiKey || ""; vkEl.placeholder = "Dán VietAPI Key (sk-...)..."; }
+    });
+  });
 }
 
 function filterLog(log){
@@ -2392,6 +2782,10 @@ document.getElementById("saveKeyBtn").onclick = ()=>{
   state.apiKey = document.getElementById("apiKeyInput").value.trim();
   renderSidebarStatus();
 };
+document.getElementById("saveVietKeyBtn").onclick = ()=>{
+  state.vietApiKey = document.getElementById("vietApiKeyInput").value.trim();
+  renderSidebarStatus();
+};
 document.getElementById("userNameInput").oninput = (e)=>{ state.userName = e.target.value.trim(); render(); };
 
 document.getElementById("presetCheap").onclick = ()=>{
@@ -2433,8 +2827,6 @@ document.getElementById("adminLoginBtn").onclick = ()=>{
     state.adminLoggedIn = true;
     document.getElementById("adminLoggedOutView").style.display="none";
     document.getElementById("adminLoggedInView").style.display="block";
-    document.getElementById("webhookInput").value = state.webhookUrl;
-    document.getElementById("sheetViewInput").value = state.sheetViewUrl;
     render();
   } else {
     alert("Sai mật khẩu.");
@@ -2445,14 +2837,6 @@ document.getElementById("adminLogoutBtn").onclick = ()=>{
   document.getElementById("adminLoggedOutView").style.display="block";
   document.getElementById("adminLoggedInView").style.display="none";
   render();
-};
-document.getElementById("webhookInput").oninput = (e)=>{ state.webhookUrl = e.target.value.trim(); };
-document.getElementById("sheetViewInput").oninput = (e)=>{ state.sheetViewUrl = e.target.value.trim(); if(state.adminLoggedIn) renderAdminSection(); };
-document.getElementById("checkSheetBtn").onclick = async ()=>{
-  const el = document.getElementById("sheetCheckResult");
-  el.textContent = "Đang kiểm tra...";
-  const r = await testRemoteWebhook();
-  el.textContent = (r.ok ? "✅ " : "❌ ") + r.msg;
 };
 
 /* =========================================================================
@@ -2466,16 +2850,20 @@ document.getElementById("menuToggle").onclick = openSidebar;
 document.getElementById("sidebarCloseBtn").onclick = closeSidebar;
 backdropEl.onclick = closeSidebar;
 // đóng drawer tự động sau khi bấm 1 hành động chính trên mobile (đỡ phải tự đóng tay)
-["saveKeyBtn","adminLoginBtn"].forEach(id=>{
+["saveKeyBtn","saveVietKeyBtn","adminLoginBtn"].forEach(id=>{
   const el = document.getElementById(id);
   if(el) el.addEventListener("click", ()=>{ if(window.innerWidth<=820) setTimeout(closeSidebar, 200); });
 });
 
+document.getElementById("branchSwitchBtn").onclick = ()=>{ showBranchGate(); };
+
 /* =========================================================================
    INIT
 ========================================================================= */
-render();
-refreshTodayStat();
+(async function initApp(){
+  BRANCHES = await loadBranches();
+  showBranchGate();
+})();
 </script>
 </body>
 </html>
