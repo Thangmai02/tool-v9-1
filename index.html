@@ -542,7 +542,7 @@ const COLOR_PRESETS = [
 ];
 
 const DEFAULT_PROMPT_1 = "Thay áo trong ảnh thứ 2 vào người ở ảnh thứ 1, giữ nguyên dáng người, khuôn mặt và nền.";
-const DEFAULT_WEBHOOK_URL = "";
+const DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwU8EfOeV_tmh7y-7jD85gjKJP_4vpxUI3pdyo8whzxBzc3Gx6ez77CwUijDex-PLoaMw/exec";
 const ADMIN_PASSWORD = "admin123";
 
 const LOG_FIELDS = ["timestamp","user","model","resolution","format","ref_image","status","prompt_tokens","output_tokens","cost_usd","cost_vnd","cost_source"];
@@ -833,9 +833,13 @@ async function appendUsageRow(row){
    BRANCHES (Cơ sở) — mỗi cơ sở có webhook Google Sheet RIÊNG, và chính Sheet
    đó lưu LUÔN cả API Key (Gemini + VietAPI) của cơ sở đó. KHÔNG có sheet/API
    cấu hình trung tâm nào cả — mỗi cơ sở độc lập hoàn toàn.
-   Danh sách cơ sở (tên + webhook + link xem sheet) được lưu cục bộ
-   (window.storage khi ở khung preview Claude, hoặc localStorage của trình
-   duyệt khi chạy như file tĩnh).
+
+   Danh sách cơ sở (tên + webhook + link xem sheet) được đồng bộ qua GIT bằng
+   file branches.json nằm cùng thư mục với index.html — đây là nguồn dùng
+   chung cho MỌI người mở link (không phụ thuộc máy/trình duyệt). Khi admin
+   sửa danh sách cơ sở, phải tải lại branches.json và commit/push lên git thì
+   người khác mới nhận được. localStorage/window.storage chỉ là bản nháp tạm
+   trên máy đang sửa, giúp thấy ngay kết quả trước khi push.
 ========================================================================= */
 const BRANCH_STORAGE_KEY = "config:branches";
 const LOCAL_BRANCH_KEY = "photoSwapStudio_branches";
@@ -845,6 +849,26 @@ const DEFAULT_BRANCHES = [
 ];
 let BRANCHES = [];
 
+const BRANCHES_JSON_URL = "./branches.json";
+
+/* Nguồn "sự thật" dùng chung cho MỌI người mở link git, không phụ thuộc máy/trình
+   duyệt: file branches.json nằm cùng thư mục, được commit/push lên git.
+   Thứ tự ưu tiên khi tải danh sách cơ sở:
+   1) localStorage của MÁY NÀY (nếu admin vừa sửa ở đây nhưng CHƯA tải file mới
+      để push lên git — để họ vẫn thấy ngay thay đổi của mình khi F5)
+   2) branches.json (đã push lên git — đây là bản mà TẤT CẢ người mở link mới
+      sẽ nhận được)
+   3) DEFAULT_BRANCHES hard-code trong code (chỉ dùng khi không tải được cả 2
+      cái trên, ví dụ mở file trực tiếp bằng file:// khiến fetch bị chặn) */
+async function fetchBranchesJson(){
+  try{
+    const resp = await fetch(BRANCHES_JSON_URL + "?v=" + Date.now(), {cache:"no-store"});
+    if(!resp.ok) return null;
+    const data = await resp.json();
+    if(Array.isArray(data) && data.length) return data;
+  }catch(e){ /* file:// hoặc chưa có branches.json — bỏ qua, dùng nguồn khác */ }
+  return null;
+}
 async function loadBranches(){
   try{
     if(HAS_ARTIFACT_STORAGE){
@@ -854,6 +878,8 @@ async function loadBranches(){
     const raw = localStorage.getItem(LOCAL_BRANCH_KEY);
     if(raw) return JSON.parse(raw);
   }catch(e){}
+  const fromJson = await fetchBranchesJson();
+  if(fromJson) return fromJson;
   return DEFAULT_BRANCHES.map(b=>({...b}));
 }
 async function saveBranchesList(list){
@@ -862,6 +888,18 @@ async function saveBranchesList(list){
   if(HAS_ARTIFACT_STORAGE){
     try{ await window.storage.set(BRANCH_STORAGE_KEY, JSON.stringify(list), true); }catch(e){}
   }
+}
+
+/* Tải file branches.json mới nhất để admin đè vào repo git rồi commit/push —
+   đây là bước BẮT BUỘC để những người khác mở link git thấy được cơ sở mới/đổi
+   webhook. Lưu ở trên (localStorage) chỉ áp dụng cho máy này. */
+function downloadBranchesJson(){
+  const blob = new Blob([JSON.stringify(BRANCHES, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "branches.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
 }
 
 /* ============ API Key của TỪNG cơ sở — đọc/ghi thẳng vào webhook riêng của cơ sở đó ============ */
@@ -2565,10 +2603,14 @@ function renderAdminSection(){
     <div class="card admin-section" style="margin-top:16px;">
       <div class="admin-header"><h3>🏢 Quản lý cơ sở</h3></div>
       <div class="caption">Mỗi cơ sở có Sheet/webhook riêng — Sheet đó vừa ghi log chi phí, vừa lưu luôn API Key (Gemini + VietAPI) của chính cơ sở đó. <b>Không dùng chung Sheet trung tâm nào cả.</b> Điền webhook trước, sau đó API Key sẽ lưu/đọc trực tiếp trên Sheet của cơ sở tương ứng.</div>
+      <div class="admin-caption" style="margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:8px;">
+        ⚠️ <b>Quan trọng:</b> "Lưu" bên dưới chỉ áp dụng ngay trên <b>máy này</b>. Để mọi người mở link git đều tự nhận được cơ sở/webhook mới (không phải làm gì thêm), sau khi lưu hãy bấm <b>"Tải file branches.json"</b>, rồi thay file <code>branches.json</code> trong repo git bằng file vừa tải, sau đó commit &amp; push. Từ đó bất kỳ ai mở link đều tự động lấy đúng cấu hình + API key.
+      </div>
       <div id="branchManageWrap" style="margin-top:6px;"></div>
       <div style="margin-top:10px;">
         <button class="sb-btn secondary" id="addBranchBtn" style="width:auto;display:inline-block;padding:8px 14px;">+ Thêm cơ sở</button>
         <button class="sb-btn" id="saveBranchesBtn" style="width:auto;display:inline-block;padding:8px 14px;margin-left:8px;">💾 Lưu danh sách cơ sở (tên / webhook / link sheet)</button>
+        <button class="sb-btn secondary" id="downloadBranchesBtn" style="width:auto;display:inline-block;padding:8px 14px;margin-left:8px;">⬇️ Tải file branches.json</button>
       </div>
       <div class="admin-caption" id="branchSaveResult" style="margin-top:8px;"></div>
     </div>`;
@@ -2614,10 +2656,12 @@ function renderAdminSection(){
     } else {
       state.webhookUrl = ""; state.sheetViewUrl = "";
     }
-    el.textContent = "✅ Đã lưu danh sách cơ sở trên máy này.";
+    el.textContent = "✅ Đã lưu trên máy này. Bấm \"Tải file branches.json\" rồi đưa file đó lên git (commit & push) để mọi người mở link cũng thấy đúng cấu hình này.";
     renderAdminSection();
     render();
   };
+  const dlBtn = document.getElementById("downloadBranchesBtn");
+  if(dlBtn) dlBtn.onclick = downloadBranchesJson;
 
   renderAdminTables();
 }

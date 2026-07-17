@@ -1,0 +1,14 @@
+[
+  {
+    "id": "v9",
+    "name": "V9",
+    "webhookUrl": "https://script.google.com/macros/s/AKfycbxdlpcyEA0oGQFrnkzqiwxi_Xog8R5jKvXRmIWx4ys99zWNEnmQ15aU6R_IN2uZF9vpTg/exec",
+    "sheetViewUrl": ""
+  },
+  {
+    "id": "v9-2",
+    "name": "V9.2",
+    "webhookUrl": "https://script.google.com/macros/s/AKfycbxKYNYVmQ6JASp5xOf9EmuSjRT3l4w25bll9gg22fSFBmYhGNVhfg5FAxS6zxqG6FBS/exec",
+    "sheetViewUrl": ""
+  }
+]
