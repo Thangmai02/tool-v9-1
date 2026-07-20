@@ -996,16 +996,67 @@ async function fetchSheetLog(){
 
 /* =========================================================================
    REMOTE LOG (Google Sheet webhook) — mirrors log_usage() / test_remote_webhook()
-========================================================================= */
+
+   Trước đây dùng fetch(...) không chờ (fire-and-forget): nếu người dùng đóng
+   tab / chuyển app ngay sau khi ảnh ra xong, trình duyệt có thể huỷ ngang
+   request trước khi kịp gửi đi, nên log bị mất mà không ai biết (no-cors
+   không báo lỗi gì cả). Nay đổi sang navigator.sendBeacon — API được trình
+   duyệt thiết kế riêng để gửi ngầm 1 lần và đảm bảo gửi dù trang bị đóng/ẩn
+   ngay sau đó. Nếu trình duyệt không hỗ trợ sendBeacon (hiếm), rơi về fetch
+   như cũ. Trường hợp cả 2 đều thất bại (ví dụ mất mạng đúng lúc đó), dòng log
+   được xếp vào hàng đợi lưu localStorage và tự gửi lại vào lần mở app kế tiếp. */
+const PENDING_LOG_KEY = "photoSwapStudio_pendingLogs";
+function getPendingLogs(){
+  try{ return JSON.parse(localStorage.getItem(PENDING_LOG_KEY) || "[]"); }catch(e){ return []; }
+}
+function setPendingLogs(list){
+  try{ localStorage.setItem(PENDING_LOG_KEY, JSON.stringify(list)); }catch(e){}
+}
+function queuePendingLog(webhookUrl, row){
+  const list = getPendingLogs();
+  list.push({webhookUrl, row, ts: Date.now()});
+  setPendingLogs(list.slice(-200)); // giới hạn 200 dòng chờ, tránh phình localStorage
+}
+function beaconSendRow(webhookUrl, row){
+  try{
+    if(navigator.sendBeacon){
+      const blob = new Blob([JSON.stringify(row)], {type:"text/plain;charset=UTF-8"});
+      if(navigator.sendBeacon(webhookUrl, blob)) return true;
+    }
+  }catch(e){}
+  return false;
+}
 async function sendRemoteLog(row){
   if(!state.webhookUrl) return;
+  const webhookUrl = state.webhookUrl;
+  if(beaconSendRow(webhookUrl, row)){
+    state.remoteLastStatus = "ok"; state.remoteLastError = "";
+    return;
+  }
   try{
-    await fetch(state.webhookUrl, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(row)});
+    await fetch(webhookUrl, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(row)});
     state.remoteLastStatus = "ok"; state.remoteLastError = "";
   }catch(err){
+    // Cả sendBeacon lẫn fetch đều thất bại (thường do mất mạng) -> xếp hàng gửi lại sau
+    queuePendingLog(webhookUrl, row);
     state.remoteLastStatus = "error"; state.remoteLastError = String(err.message||err);
   }
 }
+async function flushPendingLogs(){
+  const list = getPendingLogs();
+  if(!list.length) return;
+  const stillPending = [];
+  for(const item of list){
+    if(!beaconSendRow(item.webhookUrl, item.row)){
+      try{ await fetch(item.webhookUrl, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(item.row)}); }
+      catch(e){ stillPending.push(item); }
+    }
+  }
+  setPendingLogs(stillPending);
+}
+// Gửi lại các log còn tồn đọng ngay khi app mở lên, và mỗi khi tab sắp bị đóng/ẩn
+window.addEventListener("load", flushPendingLogs);
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") flushPendingLogs(); });
 async function testRemoteWebhook(url){
   const target = (url!==undefined) ? url : state.webhookUrl;
   if(!target) return {ok:false, msg:"Chưa cấu hình URL webhook."};
@@ -1015,7 +1066,9 @@ async function testRemoteWebhook(url){
   const testRow = {}; LOG_FIELDS.forEach(f=> testRow[f]="");
   Object.assign(testRow, {timestamp:nowStr(), user:"[TEST KẾT NỐI]", status:"test", cost_usd:0, cost_vnd:0});
   try{
-    await fetch(target, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(testRow)});
+    if(!beaconSendRow(target, testRow)){
+      await fetch(target, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(testRow)});
+    }
     return {ok:true, msg:"Đã gửi yêu cầu kiểm tra. Do trình duyệt chặn đọc phản hồi cross-origin (CORS), hãy mở Google Sheet để xác nhận có dòng '[TEST KẾT NỐI]' mới không."};
   }catch(e){
     return {ok:false, msg:"Không gửi được: "+e.message};
